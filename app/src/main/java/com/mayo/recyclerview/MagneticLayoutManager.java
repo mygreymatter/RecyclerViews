@@ -1,8 +1,13 @@
 package com.mayo.recyclerview;
 
+import android.annotation.TargetApi;
+import android.content.Context;
+import android.graphics.Rect;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 /**
  * Created by mayo on 18/5/16.
@@ -13,15 +18,28 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private int mDecoratedChildHeight;
     private int mVisibleRowCount;
     private int mFirstItem;
+    private int mSecondItem;
     private int mPrevFirstItem;
     private int mFirstItemTop;
+    private int mSecondItemTop;
+    private int mFirstItemHeight;
+    private int mSecondItemHeight;
+    private int recyclerViewHeight;
 
     //directions
     private static final int DIRECTION_NONE = 0;
     private static final int DIRECTION_UP = 1;
     private static final int DIRECTION_DOWN = 2;
     private boolean isCalledOnce;
+    private boolean canChangeOver;//true when second item overlaps the first item completely
+
     private View v;
+    private Context mContext;
+
+
+    public MagneticLayoutManager(Context context){
+        mContext = context;
+    }
 
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
@@ -54,7 +72,13 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             detachAndScrapView(scrap, recycler);
         }
 
-        updateVisibleRowCount();
+        recyclerViewHeight = getVerticalSpace();
+        mFirstItemHeight = (int) (recyclerViewHeight * 0.75f);
+        mSecondItemTop = mFirstItemHeight;
+        mSecondItemHeight = mDecoratedChildHeight;
+
+        //updateVisibleRowCount();
+        updateMagnetVisibleRowCount();
         detachAndScrapAttachedViews(recycler);
 
         layoutViews(DIRECTION_NONE, recycler, state);
@@ -65,46 +89,47 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         isCalledOnce = true;*/
     }
 
-    private void updateVisibleRowCount() {
-        if(getChildCount() == 0)
-            mFirstItem = 0;
+    /**
+     * update the rows that can be shown after magnetic scroll
+     */
+    private void updateMagnetVisibleRowCount(){
+        mVisibleRowCount = 1;//first Item always visible
 
-        if ((getChildCount() == 0) ||
-                ((getChildCount() > 0)  && (mFirstItemTop == 0))) {
-            mVisibleRowCount = getVerticalSpace() / mDecoratedChildHeight;
-            if (getVerticalSpace() % mDecoratedChildHeight > 0)
-                mVisibleRowCount++;
+        int restOfArea = recyclerViewHeight - mSecondItemTop - mSecondItemHeight;
+        mVisibleRowCount++;//second item also visible
 
-        } else {//mFirstItemTop != 0 mFirstItemTop < 0
-            mVisibleRowCount = 0;
-            int length = mDecoratedChildHeight + mFirstItemTop;
+        if(restOfArea < mDecoratedChildHeight){
+            mVisibleRowCount++;
+        }else{
+            int remainingRows = restOfArea/mDecoratedChildHeight/*the rest of items have same height*/;
+            mVisibleRowCount +=  remainingRows;
 
-            do{
-                mVisibleRowCount++;
-                length += mDecoratedChildHeight;
-            }while (length < getVerticalSpace());
-
-            int visiblePartOfFirstItem = 0;
-            if(mFirstItemTop < 0)
-                visiblePartOfFirstItem = mDecoratedChildHeight + mFirstItemTop;
-
-            int visibleAreaOfList = visiblePartOfFirstItem + (mVisibleRowCount - 1) * mDecoratedChildHeight;
-            /*Logger.print("Rows: " + mVisibleRowCount +
-                    " H: " + getVerticalSpace() +
-                    " Height: " + visibleAreaOfList);*/
-
-            if(getVerticalSpace() -  visibleAreaOfList > 0)
-                mVisibleRowCount++;
-            //Logger.print("Visible Rows: " + mVisibleRowCount);
+            int diff = restOfArea - remainingRows * mDecoratedChildHeight;
+            if(diff > 0)
+                mVisibleRowCount++;//some space left. a row can be accommodated
         }
-
-        if (mVisibleRowCount > getItemCount())
-            mVisibleRowCount = getItemCount();
-
-        //Logger.print("UpdateVisibleRowCount - FirstItem: " + mFirstItem + " RowCount: " + mVisibleRowCount);
     }
 
+    /**
+     * updates the position and height of the second item after scroll
+     * @param scrolledBy - amount of displacment of the list
+     */
+    private void updateSecondItem(int scrolledBy){
+        //reduces the distance from the top. scrolledBy is positive
+        mSecondItemTop -= scrolledBy;
+        if(mSecondItemHeight + (scrolledBy * 10) < mFirstItemHeight){
+            mSecondItemHeight += scrolledBy * 10;
+        }else{
+            mSecondItemHeight = mFirstItemHeight;
+        }
+
+        Logger.print("Second Item Height: " + mSecondItemHeight);
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void layoutViews(int direction, RecyclerView.Recycler recycler, RecyclerView.State state) {
+        //Logger.print("Layout Views");
 
         SparseArray<View> viewCache = new SparseArray<>(getChildCount());
         int startTopOffset = 0;
@@ -128,6 +153,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         int adapterPostion;
         int vTop = startTopOffset;
+        //Logger.print("vTop: " + vTop);
 
         for (int i = 0; i < mVisibleRowCount; i++) {
             adapterPostion = getAdapterPosition(i,mFirstItem);
@@ -138,18 +164,57 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             if (v == null) {
                 v = recycler.getViewForPosition(adapterPostion);
                 addView(v);
-                measureChildWithMargins(v, 0, 0);
-                layoutDecorated(v, 0, vTop,
-                        mDecoratedChildWidth,
-                        vTop + mDecoratedChildHeight);
             } else {
                 attachView(v);
                 viewCache.remove(adapterPostion);
             }
+            measureChildWithMargins(v, 0, 0);
+            switch (i){
+                case 0:
+                    RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                    r.getLayoutParams().height = mFirstItemHeight;
+
+                    layoutDecorated(v, 0, 0,
+                            mDecoratedChildWidth,
+                                /*vTop + */mFirstItemHeight);
+                    break;
+                case 1:
+                    if(direction == DIRECTION_NONE){
+                        layoutDecorated(v, 0, vTop,
+                                mDecoratedChildWidth,
+                                vTop + mDecoratedChildHeight);
+                        mSecondItemTop = vTop;
+
+                    }else if(direction == DIRECTION_UP){
+                        r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                        r.getLayoutParams().height = mSecondItemHeight;
+
+                        layoutDecorated(v, 0, mSecondItemTop,
+                                mDecoratedChildWidth,
+                                mSecondItemTop + mSecondItemHeight);
+                    }
+
+                    break;
+                default:
+                    layoutDecorated(v, 0, vTop,
+                            mDecoratedChildWidth,
+                            vTop + mDecoratedChildHeight);
+                    break;
+            }
+
+            switch (i){
+                case 0:
+                    vTop += mFirstItemHeight;
+                    break;
+                default:
+                    vTop += mDecoratedChildHeight;
+                    break;
+            }
+
             /*Logger.print("Adapter Pos: "+ adapterPostion +
                     " Top: " + vTop +
                     " Bottom: " + (vTop + mDecoratedChildHeight));*/
-            vTop += mDecoratedChildHeight;
+
         }
 
         /*
@@ -169,15 +234,13 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
      * @param scrolledBy
      */
     private void updateVisibleFirstItem(int scrolledBy) {
-
-
         if (scrolledBy > 0) {//scrolled up
             v = getChildAt(0);
             int topOfV = getDecoratedTop(v);
             //Logger.print("ScrolledBy: " + scrolledBy + " Top: " + topOfV);
             topOfV = topOfV < 0 ? -topOfV : topOfV;//changes the sign for convenience
 
-            if (topOfV < mDecoratedChildHeight) {
+            if (topOfV < /*mDecoratedChildHeight*/mFirstItemHeight) {
                 //no change of mFirstItem
                 mPrevFirstItem = mFirstItem;
                 //set the top of the mFirstItem
@@ -317,8 +380,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         //the list scrolled with displacement of delta
         offsetChildrenVertical(delta);
 
-        updateVisibleFirstItem(dy);
-        updateVisibleRowCount();
+        updateSecondItem(dy);
+        updateMagnetVisibleRowCount();
+        //updateVisibleFirstItem(dy);
+        //updateVisibleRowCount();
 
         if (dy > 0) {
             layoutViews(DIRECTION_UP, recycler, state);
@@ -354,5 +419,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
      */
     private int getLastItem() {
         return mFirstItem + mVisibleRowCount;
+    }
+
+    @Override
+    public void calculateItemDecorationsForChild(View child, Rect outRect) {
+        Logger.print("CalculateItemDecor");
     }
 }

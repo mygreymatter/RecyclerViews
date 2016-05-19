@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
 
         //LinearLayoutManager manager = new LinearLayoutManager(this);
         //FixedGridLayoutManager manager = new FixedGridLayoutManager();
-        MagneticLayoutManager manager = new MagneticLayoutManager();
+        MagneticLayoutManager manager = new MagneticLayoutManager(this);
         //JustLayoutManager manager = new JustLayoutManager();
         //manager.setTotalColumnCount(2);
 
