@@ -4,12 +4,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.View;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 /**
  * Created by mayo on 18/5/16.
@@ -39,9 +36,11 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private Context mContext;
     private RelativeLayout r;
 
+    private Callback mCallback;
 
     public MagneticLayoutManager(Context context) {
         mContext = context;
+        mCallback = (Callback) context;
     }
 
     @Override
@@ -76,12 +75,12 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         }
 
         recyclerViewHeight = getVerticalSpace();
-        mFirstItemHeight = (int) (recyclerViewHeight * 0.75f);
-        mDecoratedChildHeight = 201;
+        mFirstItemHeight = (int) (recyclerViewHeight * 0.6f);
+        mDecoratedChildHeight = (int) (recyclerViewHeight * 0.2f);
         mSecondItemTop = mFirstItemHeight;
         mSecondItemHeight = mDecoratedChildHeight;
 
-        //Logger.print("DecoratedHeight: " + mDecoratedChildHeight);
+        Logger.print("Recycler Height: " + recyclerViewHeight + " FirstItem Height: " + mFirstItemHeight + " DecoratedHeight: " + mDecoratedChildHeight);
 
         //updateVisibleRowCount();
         updateMagnetVisibleRowCount();
@@ -126,6 +125,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private void updateSecondItem(int scrolledBy) {
         //reduces the distance from the top. scrolledBy is positive
 
+        Logger.print("---------------------------------------------------------");
         if (scrolledBy > 0) {
             if (mSecondItemHeight + scrolledBy < mFirstItemHeight) {
                 mSecondItemHeight += scrolledBy;
@@ -184,7 +184,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             //Logger.print("Removing Views");
             removeAllViews();
         }
-        Logger.print("---------------------------------------------------------");
+
         int adapterPostion;
         int vTop = startTopOffset;
 
@@ -206,22 +206,20 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                         layoutDecorated(v, 0, 0,
                                 mDecoratedChildWidth,
                                 mFirstItemHeight);
-                    } else if (direction == DIRECTION_DOWN/* && adapterPostion > 0*/) {
+                    } else if (direction == DIRECTION_DOWN) {
                         layoutDecorated(v, 0, 0,
                                 mDecoratedChildWidth,
                                 mFirstItemHeight);
                     }
 
-                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" +
-                            " Height: " + mFirstItemHeight);*/
+                    //mCallback.setFirstItem(mFirstItem,mFirstItemHeight);
+                    mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
+                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
                     v.setBackgroundResource(android.R.color.holo_orange_light);
                     break;
                 case 1:
                     final RelativeLayout rr = (RelativeLayout) v.findViewById(R.id.inner_layout);
                     rr.getLayoutParams().height = mSecondItemHeight;
-
-                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop +
-                            " Height: " + mSecondItemHeight);*/
 
                     if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
                         layoutDecorated(v, 0, mSecondItemTop,
@@ -233,30 +231,55 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                                 mSecondItemTop + mSecondItemHeight);
                     }
 
+                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
+
+                    //mCallback.setSecondItemHeight(mSecondItemHeight);
+                    mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
+
                     v.setBackgroundResource(android.R.color.holo_red_light);
                     vTop = mSecondItemTop;
                     vTop += mSecondItemHeight;
 
                     break;
                 default:
-                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop +
-                            " Height: " + mDecoratedChildHeight);*/
+
+                    int h;
+                    if(adapterPostion == getItemCount() - 1 && mVisibleRowCount == 3){
+                        h = getVerticalSpace() - (mSecondItemTop + mSecondItemHeight);
+                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h + " Found Last");
+                    }else{
+                        h = mDecoratedChildHeight;
+                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
+                    }
+
+                    final RelativeLayout rrr = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                    rrr.getLayoutParams().height = h;
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
-                            vTop + mDecoratedChildHeight);
+                            vTop + h);
 
-                    vTop += mDecoratedChildHeight;
+                    mCallback.setItemHeight(adapterPostion,h);
+
+                    vTop += h;
 
                     break;
             }
 
             addView(v);
-
             /*Logger.print("Adapter Pos: "+ adapterPostion +
                     " Top: " + vTop +
                     " Bottom: " + (vTop + mDecoratedChildHeight));*/
 
         }
+
+        /*if(direction == DIRECTION_UP){
+            v = getChildAt(0);
+            RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.inner_layout);
+            ll.getLayoutParams().height = mFirstItemHeight;
+            ll.requestLayout();
+
+            Logger.print("Requested Layout");
+        }*/
 
         //check if the second item becomes the first
         if (mSecondItemTop == 0) {
@@ -280,10 +303,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         boolean bottomBoundReached = false;
         boolean topBoundReached = false;
 
-        Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
+        //Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
 
         if (mFirstItem == getItemCount() - 2) {
-            Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
+            //Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
             bottomBoundReached = true;
         } else if (mFirstItem == 0) {
             v = getChildAt(1);
