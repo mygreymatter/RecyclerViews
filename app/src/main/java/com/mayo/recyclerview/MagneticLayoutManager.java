@@ -4,10 +4,12 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 /**
  * Created by mayo on 18/5/16.
@@ -35,9 +37,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
     private View v;
     private Context mContext;
+    private RelativeLayout r;
 
 
-    public MagneticLayoutManager(Context context){
+    public MagneticLayoutManager(Context context) {
         mContext = context;
     }
 
@@ -74,8 +77,11 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         recyclerViewHeight = getVerticalSpace();
         mFirstItemHeight = (int) (recyclerViewHeight * 0.75f);
+        mDecoratedChildHeight = 201;
         mSecondItemTop = mFirstItemHeight;
         mSecondItemHeight = mDecoratedChildHeight;
+
+        //Logger.print("DecoratedHeight: " + mDecoratedChildHeight);
 
         //updateVisibleRowCount();
         updateMagnetVisibleRowCount();
@@ -83,47 +89,88 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         layoutViews(DIRECTION_NONE, recycler, state);
 
-        /*if(isCalledOnce) {
-            scrollVerticallyBy(300, recycler, state);
+        if (isCalledOnce) {
+            //scrollVerticallyBy(100, recycler, state);
         }
-        isCalledOnce = true;*/
+        isCalledOnce = true;
     }
 
     /**
      * update the rows that can be shown after magnetic scroll
      */
-    private void updateMagnetVisibleRowCount(){
+    private void updateMagnetVisibleRowCount() {
         mVisibleRowCount = 1;//first Item always visible
 
         int restOfArea = recyclerViewHeight - mSecondItemTop - mSecondItemHeight;
         mVisibleRowCount++;//second item also visible
 
-        if(restOfArea < mDecoratedChildHeight){
+        if (restOfArea < mDecoratedChildHeight) {
             mVisibleRowCount++;
-        }else{
-            int remainingRows = restOfArea/mDecoratedChildHeight/*the rest of items have same height*/;
-            mVisibleRowCount +=  remainingRows;
+        } else {
+            int remainingRows = restOfArea / mDecoratedChildHeight/*the rest of items have same height*/;
+            mVisibleRowCount += remainingRows;
 
             int diff = restOfArea - remainingRows * mDecoratedChildHeight;
-            if(diff > 0)
+            if (diff > 0)
                 mVisibleRowCount++;//some space left. a row can be accommodated
         }
+
+        //Logger.print("Rows: " + mVisibleRowCount);
     }
 
     /**
      * updates the position and height of the second item after scroll
+     *
      * @param scrolledBy - amount of displacment of the list
      */
-    private void updateSecondItem(int scrolledBy){
+    private void updateSecondItem(int scrolledBy) {
         //reduces the distance from the top. scrolledBy is positive
-        mSecondItemTop -= scrolledBy;
-        if(mSecondItemHeight + (scrolledBy * 10) < mFirstItemHeight){
-            mSecondItemHeight += scrolledBy * 10;
-        }else{
-            mSecondItemHeight = mFirstItemHeight;
+
+        if (scrolledBy > 0) {
+            if (mSecondItemHeight + scrolledBy < mFirstItemHeight) {
+                mSecondItemHeight += scrolledBy;
+            } else {
+                mSecondItemHeight = mFirstItemHeight;
+            }
+
+            //mSecondItemTop = mFirstItemHeight - scrolledBy;
+            mSecondItemTop -= scrolledBy;
+            if (mSecondItemTop < 0)
+                mSecondItemTop = 0;
+
+        } else if (scrolledBy < 0) {
+            //Logger.print("Top: " + mFirstItemTop + " " + mSecondItemTop + " " + mSecondItemHeight);
+
+            //detects when the first item is moved down
+            if(mSecondItemTop == mFirstItemHeight && mFirstItem > 0){
+                //reset the mFirstItem adapter index and its top
+                mFirstItem--;
+                Logger.print("-----------------Down Transition------------------------");
+                mFirstItemTop = 0;
+                mSecondItemTop = 0;
+            }
+
+            scrolledBy = -scrolledBy;
+            if (mSecondItemTop + scrolledBy < mFirstItemHeight) {
+                mSecondItemTop += scrolledBy;
+
+                //prevents the pushing the last item down instantly
+                if(mSecondItemTop < mDecoratedChildHeight)
+                    mSecondItemHeight = mFirstItemHeight - mSecondItemTop;
+                else {
+                    //pushes the last item down slowly
+                    int diff = mSecondItemTop - mDecoratedChildHeight;
+                    diff = diff > mDecoratedChildHeight ? mDecoratedChildHeight : diff;
+
+                    mSecondItemHeight = mFirstItemHeight + diff - mSecondItemTop;
+                }
+            } else {
+                mSecondItemTop = mFirstItemHeight;
+                mSecondItemHeight = mDecoratedChildHeight;
+            }
         }
 
-        Logger.print("Second Item Height: " + mSecondItemHeight);
+        Logger.print("Updated Second Item Top: " + mSecondItemTop + "  Height: " + mSecondItemHeight + " scrolledBy: " + scrolledBy);
 
     }
 
@@ -131,85 +178,79 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private void layoutViews(int direction, RecyclerView.Recycler recycler, RecyclerView.State state) {
         //Logger.print("Layout Views");
 
-        SparseArray<View> viewCache = new SparseArray<>(getChildCount());
         int startTopOffset = 0;
 
         if (getChildCount() > 0) {
-
-            v = getChildAt(mFirstItem);
-            startTopOffset = mFirstItemTop;
-
-            //cache all views by their exisiting position, before updating counts
-            for (int i = 0; i < getChildCount(); i++) {
-                viewCache.put(getAdapterPosition(i,mPrevFirstItem), getChildAt(i));
-            }
-
-            //detach all views
-            for (int i = 0; i < viewCache.size(); i++) {
-                detachView(viewCache.get(getAdapterPosition(i,mPrevFirstItem)));
-            }
-
+            //Logger.print("Removing Views");
+            removeAllViews();
         }
-
+        Logger.print("---------------------------------------------------------");
         int adapterPostion;
         int vTop = startTopOffset;
-        //Logger.print("vTop: " + vTop);
 
         for (int i = 0; i < mVisibleRowCount; i++) {
-            adapterPostion = getAdapterPosition(i,mFirstItem);
-            //Logger.print("Adapter Position: " + adapterPostion + " " + i);
+            adapterPostion = getAdapterPosition(i, mFirstItem);
+            //Logger.print("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
 
-            v = viewCache.get(adapterPostion);
+            if (adapterPostion == -1)
+                continue;
 
-            if (v == null) {
-                v = recycler.getViewForPosition(adapterPostion);
-                addView(v);
-            } else {
-                attachView(v);
-                viewCache.remove(adapterPostion);
-            }
+            v = recycler.getViewForPosition(adapterPostion);
             measureChildWithMargins(v, 0, 0);
-            switch (i){
+            switch (i) {
                 case 0:
-                    RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                    final RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
                     r.getLayoutParams().height = mFirstItemHeight;
 
-                    layoutDecorated(v, 0, 0,
-                            mDecoratedChildWidth,
-                                /*vTop + */mFirstItemHeight);
+                    if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
+                        layoutDecorated(v, 0, 0,
+                                mDecoratedChildWidth,
+                                mFirstItemHeight);
+                    } else if (direction == DIRECTION_DOWN/* && adapterPostion > 0*/) {
+                        layoutDecorated(v, 0, 0,
+                                mDecoratedChildWidth,
+                                mFirstItemHeight);
+                    }
+
+                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" +
+                            " Height: " + mFirstItemHeight);*/
+                    v.setBackgroundResource(android.R.color.holo_orange_light);
                     break;
                 case 1:
-                    if(direction == DIRECTION_NONE){
-                        layoutDecorated(v, 0, vTop,
+                    final RelativeLayout rr = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                    rr.getLayoutParams().height = mSecondItemHeight;
+
+                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop +
+                            " Height: " + mSecondItemHeight);*/
+
+                    if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
+                        layoutDecorated(v, 0, mSecondItemTop,
                                 mDecoratedChildWidth,
-                                vTop + mDecoratedChildHeight);
-                        mSecondItemTop = vTop;
-
-                    }else if(direction == DIRECTION_UP){
-                        r = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                        r.getLayoutParams().height = mSecondItemHeight;
-
+                                mSecondItemTop + mSecondItemHeight);
+                    } else if (direction == DIRECTION_DOWN) {
                         layoutDecorated(v, 0, mSecondItemTop,
                                 mDecoratedChildWidth,
                                 mSecondItemTop + mSecondItemHeight);
                     }
 
+                    v.setBackgroundResource(android.R.color.holo_red_light);
+                    vTop = mSecondItemTop;
+                    vTop += mSecondItemHeight;
+
                     break;
                 default:
+                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop +
+                            " Height: " + mDecoratedChildHeight);*/
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
                             vTop + mDecoratedChildHeight);
+
+                    vTop += mDecoratedChildHeight;
+
                     break;
             }
 
-            switch (i){
-                case 0:
-                    vTop += mFirstItemHeight;
-                    break;
-                default:
-                    vTop += mDecoratedChildHeight;
-                    break;
-            }
+            addView(v);
 
             /*Logger.print("Adapter Pos: "+ adapterPostion +
                     " Top: " + vTop +
@@ -217,160 +258,58 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         }
 
-        /*
-         * Finally, we ask the Recycler to scrap and store any views
-         * that we did not re-attach. These are views that are not currently
-         * necessary because they are no longer visible.
-         */
-        for (int i=0; i < viewCache.size(); i++) {
-            final View removingView = viewCache.valueAt(i);
-            recycler.recycleView(removingView);
+        //check if the second item becomes the first
+        if (mSecondItemTop == 0) {
+            //set the current second as the first
+            mFirstItem++;
+            mSecondItemTop = mFirstItemHeight;
+            mSecondItemHeight = mDecoratedChildHeight;
+            Logger.print("----------------------Transition--------------------------");
         }
+
     }
-
-    /**
-     * updates mFirstItem and mFirstItemTop after the scrolling
-     *
-     * @param scrolledBy
-     */
-    private void updateVisibleFirstItem(int scrolledBy) {
-        if (scrolledBy > 0) {//scrolled up
-            v = getChildAt(0);
-            int topOfV = getDecoratedTop(v);
-            //Logger.print("ScrolledBy: " + scrolledBy + " Top: " + topOfV);
-            topOfV = topOfV < 0 ? -topOfV : topOfV;//changes the sign for convenience
-
-            if (topOfV < /*mDecoratedChildHeight*/mFirstItemHeight) {
-                //no change of mFirstItem
-                mPrevFirstItem = mFirstItem;
-                //set the top of the mFirstItem
-                mFirstItemTop = -topOfV;
-                //Logger.print("FirstItem: " + mFirstItem + " First Top: " + mFirstItemTop + " Rows:" + mVisibleRowCount);
-                return;
-            } else {
-                mPrevFirstItem = mFirstItem;
-                mFirstItem += topOfV / mDecoratedChildHeight;
-
-                if(mFirstItem + mVisibleRowCount > getItemCount()){
-                    mFirstItem = getItemCount() - mVisibleRowCount;
-
-                    int l =  mVisibleRowCount * mDecoratedChildHeight;
-
-                    if(l > getVerticalSpace()){
-                        mFirstItemTop = getVerticalSpace() - l;
-                    }else{
-                        mVisibleRowCount++;
-                        mFirstItem = getItemCount() - mVisibleRowCount;
-                        l =  mVisibleRowCount * mDecoratedChildHeight;
-                        mFirstItemTop = getVerticalSpace() - l;
-                    }
-                }else {
-                    if ((topOfV % mDecoratedChildHeight == 0))
-                        mFirstItemTop = 0;
-                    else {
-                        int multiple = topOfV / mDecoratedChildHeight;
-                        mFirstItemTop = -(topOfV - (multiple * mDecoratedChildHeight));
-                    }
-                }
-
-            }
-
-            //Logger.print("First: " + mFirstItem + " Top: " + mFirstItemTop);
-
-        } else {//scrolled down
-            v = getChildAt(0);
-            int topOfV = getDecoratedTop(v);
-
-            if (topOfV < 0) {
-                //no change of mFirstItem
-                mPrevFirstItem = mFirstItem;
-                //set the top of the mFirstItem
-                mFirstItemTop = topOfV;
-                return;
-            }else{
-                if(topOfV == 0){
-                    mPrevFirstItem = mFirstItem;
-                    mFirstItemTop = 0;
-                }else if(topOfV > 0){
-                    mPrevFirstItem = mFirstItem;
-
-                    if(topOfV < mDecoratedChildHeight){
-                        mFirstItem -= 1;
-                        mFirstItemTop = topOfV - mDecoratedChildHeight;
-                    }else{
-                        int multiple = topOfV/mDecoratedChildHeight;
-                        mFirstItem -= multiple + 1;
-                        mFirstItemTop = ((multiple + 1) * mDecoratedChildHeight) - topOfV;
-                        mFirstItemTop = mFirstItemTop > 0? -mFirstItemTop : mFirstItemTop;
-                    }
-
-                    if(mFirstItem < 0) {
-                        mFirstItem = 0;
-                        mFirstItemTop = 0;
-                    }
-
-                }
-            }
-        }
-    }
-
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        //Logger.print("ScrollVerticallyBy");
+
 
         if (getChildCount() == 0)
             return 0;
 
-        View topView = getChildAt(0);
-        View bottomView = getChildAt(getChildCount() - 1);
-        int viewSpan = getDecoratedBottom(bottomView) - getDecoratedTop(topView);
-
-        if (viewSpan < getVerticalSpace()) {
-            Logger.print("Cannot scroll");
-            return 0;
-        }
-
         int delta;
-        int heightOfList = getVerticalSpace();
         boolean bottomBoundReached = false;
         boolean topBoundReached = false;
 
-        if(getLastItem() == getItemCount()){
-            v = getChildAt(getChildCount() - 1);
-            int bottom = getDecoratedBottom(v);
+        Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
 
-            if(bottom - dy < heightOfList){
-                //if not set dy, there will be gap at the bottom
-                dy = heightOfList - bottom;
-            }
-            if(bottom <= getVerticalSpace() + 20) {
-                bottomBoundReached = true;
-            }
-        }else if(mFirstItem == 0){
-            v = getChildAt(0);
+        if (mFirstItem == getItemCount() - 2) {
+            Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
+            bottomBoundReached = true;
+        } else if (mFirstItem == 0) {
+            v = getChildAt(1);
             int top = getDecoratedTop(v);
             //Logger.print("Top: " + top +" dy: " + dy);
 
-            if(-dy+top > 0){
-                dy = top;
+            if (-dy + top > mFirstItemHeight) {
+                dy = mFirstItemHeight - top;
+                //Logger.print("Changed dy: " + dy);
             }
 
-            //Logger.print("Changed dy: " + dy);
-            if(top > 0){
+            //Logger.print("Changed dy: " + dy + " Top: " + top + " " + mFirstItemHeight);
+            if (top == mFirstItemHeight) {
                 topBoundReached = true;
             }
         }
 
         if (dy > 0) {
             if (bottomBoundReached) {
-                //Logger.print("BottomBound Reached!");
+                Logger.print("BottomBound Reached!");
                 return 0;
             }
             //Logger.print("Scrolling Up");
         } else {
             if (topBoundReached) {
-                //Logger.print("TopBound Reached!");
+                Logger.print("TopBound Reached!");
                 return 0;
             }
             //Logger.print("Scrolling Down");
@@ -387,7 +326,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         if (dy > 0) {
             layoutViews(DIRECTION_UP, recycler, state);
-        }else{
+        } else {
             layoutViews(DIRECTION_DOWN, recycler, state);
         }
 
@@ -403,7 +342,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
      * @param i the index of the item on the screen
      * @return the index of the item w.r.t adapter
      */
-    private int getAdapterPosition(int i,int firstItem) {
+    private int getAdapterPosition(int i, int firstItem) {
+        int pos = firstItem + i;
+        if (pos >= getItemCount())
+            return -1;
         return firstItem + i;
     }
 
@@ -424,5 +366,17 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public void calculateItemDecorationsForChild(View child, Rect outRect) {
         Logger.print("CalculateItemDecor");
+    }
+
+    @Override
+    public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state, int widthSpec, int heightSpec) {
+        super.onMeasure(recycler, state, widthSpec, heightSpec);
+        //Logger.print("onMeasure: " + widthSpec);
+    }
+
+    @Override
+    public void setMeasuredDimension(Rect childrenBounds, int wSpec, int hSpec) {
+        super.setMeasuredDimension(childrenBounds, wSpec, hSpec);
+        Logger.print("setMeasuredDimensions");
     }
 }

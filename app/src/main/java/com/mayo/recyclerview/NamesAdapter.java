@@ -24,14 +24,17 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         //Logger.print("Bind View: " + position);
         holder.name.setText("Item " + position);
-        if(position > 0){
+        if(position == 1){
+            holder.innerLayout.setBackgroundResource(android.R.color.darker_gray);
+            //holder.innerLayout.getLayoutParams().height = 301;
+        }else{
             holder.innerLayout.setBackgroundResource(android.R.color.holo_blue_dark);
         }
     }
 
     @Override
     public int getItemCount() {
-        return 20;
+        return 6 + 1;
     }
 
     /*class ViewHolder extends RecyclerView.ViewHolder {
