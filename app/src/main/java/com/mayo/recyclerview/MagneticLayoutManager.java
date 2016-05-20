@@ -8,6 +8,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.RelativeLayout;
 
+import java.util.Map;
+
 /**
  * Created by mayo on 18/5/16.
  */
@@ -31,16 +33,19 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private static final int DIRECTION_DOWN = 2;
     private boolean isCalledOnce;
     private boolean canChangeOver;//true when second item overlaps the first item completely
+    private int numOfPasses = 0;
 
     private View v;
     private Context mContext;
     private RelativeLayout r;
 
     private Callback mCallback;
+    private Map<Integer,Integer> mHeights;
 
     public MagneticLayoutManager(Context context) {
         mContext = context;
         mCallback = (Callback) context;
+        mHeights = Recycler.getInstance().viewHeights;
     }
 
     @Override
@@ -52,6 +57,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+        numOfPasses++;
+
         if (getItemCount() == 0) {
             detachAndScrapAttachedViews(recycler);
             return;
@@ -200,7 +207,10 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             switch (i) {
                 case 0:
                     final RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    r.getLayoutParams().height = mFirstItemHeight;
+                    if(numOfPasses < 2)
+                        r.getLayoutParams().height = mFirstItemHeight;
+                    else
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
 
                     if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
                         layoutDecorated(v, 0, 0,
@@ -212,13 +222,18 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                                 mFirstItemHeight);
                     }
 
-                    mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
+                    mHeights.put(adapterPostion,mFirstItemHeight);
+                    //mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
                     Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
                     v.setBackgroundResource(android.R.color.holo_orange_light);
                     break;
                 case 1:
                     final RelativeLayout rr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    rr.getLayoutParams().height = mSecondItemHeight;
+                    //rr.getLayoutParams().height = mSecondItemHeight;
+                    if(numOfPasses < 2)
+                        rr.getLayoutParams().height = mSecondItemHeight;
+                    else
+                        rr.getLayoutParams().height = mHeights.get(adapterPostion);
 
                     if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
                         layoutDecorated(v, 0, mSecondItemTop,
@@ -232,7 +247,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
                     Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
 
-                    mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
+                    mHeights.put(adapterPostion,mSecondItemHeight);
+                    //mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
 
                     v.setBackgroundResource(android.R.color.holo_red_light);
                     vTop = mSecondItemTop;
@@ -251,12 +267,19 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     }
 
                     final RelativeLayout rrr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    rrr.getLayoutParams().height = h;
+                    //rrr.getLayoutParams().height = h;
+
+                    if(numOfPasses < 2 || mHeights.get(adapterPostion) == null)
+                        rrr.getLayoutParams().height = h;
+                    else
+                        rrr.getLayoutParams().height = mHeights.get(adapterPostion);
+
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
                             vTop + h);
 
-                    mCallback.setItemHeight(adapterPostion,h);
+                    mHeights.put(adapterPostion,h);
+                    //mCallback.setItemHeight(adapterPostion,h);
 
                     vTop += h;
 

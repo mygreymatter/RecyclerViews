@@ -16,12 +16,16 @@ import java.util.Map;
  */
 public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> {
 
-    private int mFirstItem = -1;
+    /*private int mFirstItem = -1;
     private int mFirstItemHeight;
     private int mSecondItemHeight;
-    private int mLastItemHeight;
+    private int mLastItemHeight;*/
 
-    private Map<Integer,Integer> mHeights = new HashMap<>();
+    private Map<Integer,Integer> mHeights;
+
+    public NamesAdapter(){
+        mHeights = Recycler.getInstance().viewHeights;
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

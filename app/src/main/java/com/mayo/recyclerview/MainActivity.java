@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements Callback{
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        Logger.print("Height of RecyclerView: " + mRecycler.getHeight());
+        //Logger.print("Height of RecyclerView: " + mRecycler.getHeight());
     }
 
     @Override
