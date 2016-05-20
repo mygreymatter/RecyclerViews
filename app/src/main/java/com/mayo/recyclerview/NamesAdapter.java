@@ -94,19 +94,6 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         }
     }
 
-    public void setFirstItem(int firstItem, int height) {
-        mFirstItem = firstItem;
-        mFirstItemHeight = height;
-    }
-
-    public void setSecondItemHeight(int height) {
-        mSecondItemHeight = height;
-    }
-
-    public void setLastItemHeight(int height) {
-        mLastItemHeight = height;
-    }
-
     public void setItemHeight(int pos,int height){
         mHeights.put(pos,height);
         //Logger.print("PUT Position: " + pos + " Height: " + height);

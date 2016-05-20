@@ -212,9 +212,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                                 mFirstItemHeight);
                     }
 
-                    //mCallback.setFirstItem(mFirstItem,mFirstItemHeight);
                     mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
-                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
+                    Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
                     v.setBackgroundResource(android.R.color.holo_orange_light);
                     break;
                 case 1:
@@ -231,9 +230,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                                 mSecondItemTop + mSecondItemHeight);
                     }
 
-                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
+                    Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
 
-                    //mCallback.setSecondItemHeight(mSecondItemHeight);
                     mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
 
                     v.setBackgroundResource(android.R.color.holo_red_light);

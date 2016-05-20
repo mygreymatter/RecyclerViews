@@ -36,21 +36,6 @@ public class MainActivity extends AppCompatActivity implements Callback{
     }
 
     @Override
-    public void setFirstItem(int firstItem,int height) {
-        adapter.setFirstItem(firstItem,height);
-    }
-
-    @Override
-    public void setSecondItemHeight(int height) {
-        adapter.setSecondItemHeight(height);
-    }
-
-    @Override
-    public void setOtherItemHeight(int height) {
-        adapter.setLastItemHeight(height);
-    }
-
-    @Override
     public void setItemHeight(int pos,int height) {
         adapter.setItemHeight(pos,height);
     }
