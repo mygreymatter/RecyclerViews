@@ -203,10 +203,11 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                 continue;
 
             v = recycler.getViewForPosition(adapterPostion);
+            r = (RelativeLayout) v.findViewById(R.id.inner_layout);
             measureChildWithMargins(v, 0, 0);
             switch (i) {
                 case 0:
-                    final RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+                    //The first 2 passes are general. The next pass onwards the height changes
                     if(numOfPasses < 2)
                         r.getLayoutParams().height = mFirstItemHeight;
                     else
@@ -223,17 +224,15 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     }
 
                     mHeights.put(adapterPostion,mFirstItemHeight);
-                    //mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
+
                     Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
                     v.setBackgroundResource(android.R.color.holo_orange_light);
                     break;
                 case 1:
-                    final RelativeLayout rr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    //rr.getLayoutParams().height = mSecondItemHeight;
                     if(numOfPasses < 2)
-                        rr.getLayoutParams().height = mSecondItemHeight;
+                        r.getLayoutParams().height = mSecondItemHeight;
                     else
-                        rr.getLayoutParams().height = mHeights.get(adapterPostion);
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
 
                     if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
                         layoutDecorated(v, 0, mSecondItemTop,
@@ -248,7 +247,6 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
 
                     mHeights.put(adapterPostion,mSecondItemHeight);
-                    //mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
 
                     v.setBackgroundResource(android.R.color.holo_red_light);
                     vTop = mSecondItemTop;
@@ -266,20 +264,16 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                         Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
                     }
 
-                    final RelativeLayout rrr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    //rrr.getLayoutParams().height = h;
-
                     if(numOfPasses < 2 || mHeights.get(adapterPostion) == null)
-                        rrr.getLayoutParams().height = h;
+                        r.getLayoutParams().height = h;
                     else
-                        rrr.getLayoutParams().height = mHeights.get(adapterPostion);
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
 
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
                             vTop + h);
 
                     mHeights.put(adapterPostion,h);
-                    //mCallback.setItemHeight(adapterPostion,h);
 
                     vTop += h;
 
@@ -292,15 +286,6 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     " Bottom: " + (vTop + mDecoratedChildHeight));*/
 
         }
-
-        /*if(direction == DIRECTION_UP){
-            v = getChildAt(0);
-            RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.inner_layout);
-            ll.getLayoutParams().height = mFirstItemHeight;
-            ll.requestLayout();
-
-            Logger.print("Requested Layout");
-        }*/
 
         //check if the second item becomes the first
         if (mSecondItemTop == 0) {

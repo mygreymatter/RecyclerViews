@@ -40,26 +40,6 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
         //Logger.print("\n---------------------------------------------------------");
 
-        holder.name.setText("Item " + position);
-        if (position == 1) {
-            holder.innerLayout.setBackgroundResource(android.R.color.darker_gray);
-            //holder.innerLayout.getLayoutParams().height = 301;
-        } else {
-            holder.innerLayout.setBackgroundResource(android.R.color.holo_blue_dark);
-        }
-
-        /*if(mFirstItem > -1 && position == mFirstItem) {
-            holder.innerLayout.getLayoutParams().height = mFirstItemHeight;
-            //Logger.print(position + " First Height Set: " + mFirstItemHeight);
-        }else if(mFirstItem > -1 && position == mFirstItem + 1) {
-            holder.innerLayout.getLayoutParams().height = mSecondItemHeight;
-            //Logger.print(position + " Second Height Set: " + mSecondItemHeight);
-        }else {
-            holder.innerLayout.getLayoutParams().height = mLastItemHeight;
-            Logger.print(position + " Other Height Set: " + mLastItemHeight);
-
-
-        }*/
         if(mHeights.size() > 0 && mHeights.get(position) != null){
             holder.innerLayout.getLayoutParams().height = mHeights.get(position);
             Logger.print("Position: " + position + " Height: " + mHeights.get(position));
@@ -67,6 +47,8 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
         if(position == 6)
             holder.name.setText("The End!");
+        else
+            holder.name.setText("Item " + position);
     }
 
     @Override
