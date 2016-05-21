@@ -1,6 +1,9 @@
 package com.mayo.recyclerview;
 
+import android.graphics.PointF;
+import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -355,5 +358,36 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
      */
     private int getLastItem() {
         return mFirstItem + mVisibleRowCount;
+    }
+
+    @Override
+    public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state, int position) {
+        if(position > getItemCount()){
+            Log.e("JustLayoutManager","cannot scroll to the position: " + position);
+            return;
+        }
+
+        recyclerView.smoothScrollBy(0,200);
+
+        /*
+         * LinearSmoothScroller's default behavior is to scroll the contents until
+         * the child is fully visible. It will snap to the top-left or bottom-right
+         * of the parent depending on whether the direction of travel was positive
+         * or negative.
+         *//*
+        LinearSmoothScroller scroller = new LinearSmoothScroller(recyclerView.getContext()) {
+            *//*
+             * LinearSmoothScroller, at a minimum, just need to know the vector
+             * (x/y distance) to travel in order to get from the current positioning
+             * to the target.
+             *//*
+            @Override
+            public PointF computeScrollVectorForPosition(int targetPosition) {
+                return new PointF(0,-300);
+            }
+        };
+
+        scroller.setTargetPosition(position);
+        startSmoothScroll(scroller);*/
     }
 }

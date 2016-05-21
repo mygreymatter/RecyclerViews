@@ -540,6 +540,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
                 final int columnOffset = getGlobalColumnOfPosition(targetPosition)
                         - getGlobalColumnOfPosition(mFirstVisiblePosition);
 
+                Logger.print("computerScroll");
                 return new PointF(columnOffset * mDecoratedChildWidth, rowOffset * mDecoratedChildHeight);
             }
         };
