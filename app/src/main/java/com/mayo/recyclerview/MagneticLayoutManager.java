@@ -2,11 +2,12 @@ package com.mayo.recyclerview;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Rect;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.RelativeLayout;
+
+import java.util.Map;
 
 /**
  * Created by mayo on 18/5/16.
@@ -17,30 +18,32 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private int mDecoratedChildHeight;
     private int mVisibleRowCount;
     private int mFirstItem;
-    private int mSecondItem;
-    private int mPrevFirstItem;
-    private int mFirstItemTop;
     private int mSecondItemTop;
     private int mFirstItemHeight;
     private int mSecondItemHeight;
-    private int recyclerViewHeight;
+    private int mRecyclerViewHeight;
 
     //directions
+    private int mDirection;
     private static final int DIRECTION_NONE = 0;
     private static final int DIRECTION_UP = 1;
     private static final int DIRECTION_DOWN = 2;
+
     private boolean isCalledOnce;
-    private boolean canChangeOver;//true when second item overlaps the first item completely
+//    private boolean isSettling;
+    private int numOfPasses = 0;
 
     private View v;
-    private Context mContext;
     private RelativeLayout r;
 
+    private Map<Integer,Integer> mHeights;
+    private Context mContext;
     private Callback mCallback;
 
     public MagneticLayoutManager(Context context) {
         mContext = context;
         mCallback = (Callback) context;
+        mHeights = Recycler.getInstance().viewHeights;
     }
 
     @Override
@@ -52,6 +55,9 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+        numOfPasses++;
+
+
         if (getItemCount() == 0) {
             detachAndScrapAttachedViews(recycler);
             return;
@@ -74,13 +80,13 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             detachAndScrapView(scrap, recycler);
         }
 
-        recyclerViewHeight = getVerticalSpace();
-        mFirstItemHeight = (int) (recyclerViewHeight * 0.6f);
-        mDecoratedChildHeight = (int) (recyclerViewHeight * 0.2f);
+        mRecyclerViewHeight = getVerticalSpace();
+        mFirstItemHeight = (int) (mRecyclerViewHeight * 0.6f);
+        mDecoratedChildHeight = (int) (mRecyclerViewHeight * 0.2f);
         mSecondItemTop = mFirstItemHeight;
         mSecondItemHeight = mDecoratedChildHeight;
 
-        Logger.print("Recycler Height: " + recyclerViewHeight + " FirstItem Height: " + mFirstItemHeight + " DecoratedHeight: " + mDecoratedChildHeight);
+        //Logger.print("Recycler Height: " + mRecyclerViewHeight + " FirstItem Height: " + mFirstItemHeight + " DecoratedHeight: " + mDecoratedChildHeight);
 
         //updateVisibleRowCount();
         updateMagnetVisibleRowCount();
@@ -100,7 +106,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private void updateMagnetVisibleRowCount() {
         mVisibleRowCount = 1;//first Item always visible
 
-        int restOfArea = recyclerViewHeight - mSecondItemTop - mSecondItemHeight;
+        int restOfArea = mRecyclerViewHeight - mSecondItemTop - mSecondItemHeight;
         mVisibleRowCount++;//second item also visible
 
         if (restOfArea < mDecoratedChildHeight) {
@@ -115,6 +121,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         }
 
         //Logger.print("Rows: " + mVisibleRowCount);
+
     }
 
     /**
@@ -125,7 +132,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private void updateSecondItem(int scrolledBy) {
         //reduces the distance from the top. scrolledBy is positive
 
-        Logger.print("---------------------------------------------------------");
+//        Logger.print("---------------------------------------------------------");
         if (scrolledBy > 0) {
             if (mSecondItemHeight + scrolledBy < mFirstItemHeight) {
                 mSecondItemHeight += scrolledBy;
@@ -145,8 +152,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             if(mSecondItemTop == mFirstItemHeight && mFirstItem > 0){
                 //reset the mFirstItem adapter index and its top
                 mFirstItem--;
-                Logger.print("-----------------Down Transition------------------------");
-                mFirstItemTop = 0;
+                //Logger.print("-----------------Down Transition------------------------");
                 mSecondItemTop = 0;
             }
 
@@ -170,7 +176,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        Logger.print("Updated Second Item Top: " + mSecondItemTop + "  Height: " + mSecondItemHeight + " scrolledBy: " + scrolledBy);
+        //Logger.print("Updated Second Item Top: " + mSecondItemTop + "  Height: " + mSecondItemHeight + " scrolledBy: " + scrolledBy);
 
     }
 
@@ -180,6 +186,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         int startTopOffset = 0;
 
+        //Logger.print("\n------------------------------------------------------------");
         if (getChildCount() > 0) {
             //Logger.print("Removing Views");
             removeAllViews();
@@ -196,45 +203,47 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                 continue;
 
             v = recycler.getViewForPosition(adapterPostion);
+            r = (RelativeLayout) v.findViewById(R.id.inner_layout);
             measureChildWithMargins(v, 0, 0);
             switch (i) {
                 case 0:
-                    final RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    r.getLayoutParams().height = mFirstItemHeight;
+                    //The first 2 passes are general. The next pass onwards the height changes
+                    if(numOfPasses < 2)
+                        r.getLayoutParams().height = mFirstItemHeight;
+                    else
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
 
-                    if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
-                        layoutDecorated(v, 0, 0,
-                                mDecoratedChildWidth,
-                                mFirstItemHeight);
-                    } else if (direction == DIRECTION_DOWN) {
-                        layoutDecorated(v, 0, 0,
-                                mDecoratedChildWidth,
-                                mFirstItemHeight);
-                    }
+                    layoutDecorated(v, 0, 0,
+                            mDecoratedChildWidth,
+                            mFirstItemHeight);
 
-                    //mCallback.setFirstItem(mFirstItem,mFirstItemHeight);
-                    mCallback.setItemHeight(adapterPostion,mFirstItemHeight);
-                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: 0" + " Height: " + mFirstItemHeight);
-                    v.setBackgroundResource(android.R.color.holo_orange_light);
+                    mHeights.put(adapterPostion,mFirstItemHeight);
+
+                    /*Logger.print(adapterPostion +
+                            " FirstItem: " + mFirstItem +
+                            " Top: 0" +
+                            " Height: " + mFirstItemHeight + " " + mHeights.get(adapterPostion));*/
+
                     break;
                 case 1:
-                    final RelativeLayout rr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    rr.getLayoutParams().height = mSecondItemHeight;
+                    if(numOfPasses < 2)
+                        r.getLayoutParams().height = mSecondItemHeight;
+                    else
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
 
-                    if (direction == DIRECTION_UP || direction == DIRECTION_NONE) {
-                        layoutDecorated(v, 0, mSecondItemTop,
-                                mDecoratedChildWidth,
-                                mSecondItemTop + mSecondItemHeight);
-                    } else if (direction == DIRECTION_DOWN) {
-                        layoutDecorated(v, 0, mSecondItemTop,
-                                mDecoratedChildWidth,
-                                mSecondItemTop + mSecondItemHeight);
-                    }
 
-                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + mSecondItemTop + " Height: " + mSecondItemHeight);
+                    r.getLayoutParams().height = mSecondItemHeight;
 
-                    //mCallback.setSecondItemHeight(mSecondItemHeight);
-                    mCallback.setItemHeight(adapterPostion,mSecondItemHeight);
+                    layoutDecorated(v, 0, mSecondItemTop,
+                            mDecoratedChildWidth,
+                            mSecondItemTop + mSecondItemHeight);
+
+                    Logger.print(adapterPostion +
+                            " FirstItem: " + mFirstItem +
+                            " Top: " + mSecondItemTop +
+                            " Height: " + mSecondItemHeight + " " + mHeights.get(adapterPostion));
+
+                    mHeights.put(adapterPostion,mSecondItemHeight);
 
                     v.setBackgroundResource(android.R.color.holo_red_light);
                     vTop = mSecondItemTop;
@@ -246,19 +255,22 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     int h;
                     if(adapterPostion == getItemCount() - 1 && mVisibleRowCount == 3){
                         h = getVerticalSpace() - (mSecondItemTop + mSecondItemHeight);
-                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h + " Found Last");
+//                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h + " Found Last");
                     }else{
                         h = mDecoratedChildHeight;
-                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
+//                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
                     }
 
-                    final RelativeLayout rrr = (RelativeLayout) v.findViewById(R.id.inner_layout);
-                    rrr.getLayoutParams().height = h;
+                    if(numOfPasses < 2 || mHeights.get(adapterPostion) == null)
+                        r.getLayoutParams().height = h;
+                    else
+                        r.getLayoutParams().height = mHeights.get(adapterPostion);
+
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
                             vTop + h);
 
-                    mCallback.setItemHeight(adapterPostion,h);
+                    mHeights.put(adapterPostion,h);
 
                     vTop += h;
 
@@ -272,32 +284,29 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         }
 
-        /*if(direction == DIRECTION_UP){
-            v = getChildAt(0);
-            RelativeLayout ll = (RelativeLayout) v.findViewById(R.id.inner_layout);
-            ll.getLayoutParams().height = mFirstItemHeight;
-            ll.requestLayout();
-
-            Logger.print("Requested Layout");
-        }*/
-
         //check if the second item becomes the first
         if (mSecondItemTop == 0) {
             //set the current second as the first
             mFirstItem++;
             mSecondItemTop = mFirstItemHeight;
             mSecondItemHeight = mDecoratedChildHeight;
-            Logger.print("----------------------Transition--------------------------");
+            //Logger.print("----------------------Transition--------------------------");
         }
 
     }
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-
+        //Logger.print("Scrolled By: " + dy);
 
         if (getChildCount() == 0)
             return 0;
+
+      /*Logger.print("scrollVertical: " + isSettling +
+                  " Prev Direction: "  + (mDirection == DIRECTION_UP ? " UP" : "Down") +
+                  " dy: " + dy);*/
+        /*if(isSettling && mDirection == DIRECTION_DOWN && dy > 0)
+            return 0;*/
 
         int delta;
         boolean bottomBoundReached = false;
@@ -313,11 +322,11 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
             int top = getDecoratedTop(v);
             //Logger.print("Top: " + top +" dy: " + dy);
 
-            if (-dy + top > mFirstItemHeight) {
+            /*if (-dy + top > mFirstItemHeight) {
                 dy = mFirstItemHeight - top;
-                //Logger.print("Changed dy: " + dy);
+                Logger.print("Changed dy: " + dy);
             }
-
+*/
             //Logger.print("Changed dy: " + dy + " Top: " + top + " " + mFirstItemHeight);
             if (top == mFirstItemHeight) {
                 topBoundReached = true;
@@ -344,12 +353,14 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
         updateSecondItem(dy);
         updateMagnetVisibleRowCount();
-        //updateVisibleFirstItem(dy);
-        //updateVisibleRowCount();
 
         if (dy > 0) {
+            mDirection = DIRECTION_UP;
+            //Logger.print("Direction UP: " + dy);
             layoutViews(DIRECTION_UP, recycler, state);
         } else {
+            mDirection = DIRECTION_DOWN;
+            //Logger.print("Direction DOWN: " + dy);
             layoutViews(DIRECTION_DOWN, recycler, state);
         }
 
@@ -379,27 +390,39 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         return getHeight() - getPaddingBottom() - getPaddingTop();
     }
 
-    /**
-     * @return the adapter position of the item that is visible at the end of the screen
-     */
-    private int getLastItem() {
-        return mFirstItem + mVisibleRowCount;
-    }
 
     @Override
-    public void calculateItemDecorationsForChild(View child, Rect outRect) {
-        Logger.print("CalculateItemDecor");
+    public void onScrollStateChanged(int state) {
+        switch (state){
+            case RecyclerView.SCROLL_STATE_IDLE:
+//                Logger.print("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down"));
+
+                if(mSecondItemHeight > mDecoratedChildHeight && mSecondItemHeight <= mFirstItemHeight){
+                    if(mDirection == DIRECTION_UP) {
+                        int extendedHeight = mSecondItemHeight - mDecoratedChildHeight;
+                        if (extendedHeight > 100){
+                            mCallback.setFlingAction(mSecondItemTop);
+                        }else{
+                            mCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
+                        }
+                    }else if(mDirection == DIRECTION_DOWN){
+                        int contractedHeight = mFirstItemHeight - mSecondItemHeight;
+                        if (contractedHeight > 100){
+
+                            mCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
+                        }else{
+                            mCallback.setFlingAction(mSecondItemTop);
+                        }
+                    }
+                }
+                break;
+            case RecyclerView.SCROLL_STATE_DRAGGING:
+//                Logger.print("Scroll Dragging");
+                break;
+            case RecyclerView.SCROLL_STATE_SETTLING:
+//                Logger.print("Scroll Settling");
+                break;
+        }
     }
 
-    @Override
-    public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state, int widthSpec, int heightSpec) {
-        super.onMeasure(recycler, state, widthSpec, heightSpec);
-        //Logger.print("onMeasure: " + widthSpec);
-    }
-
-    @Override
-    public void setMeasuredDimension(Rect childrenBounds, int wSpec, int hSpec) {
-        super.setMeasuredDimension(childrenBounds, wSpec, hSpec);
-        Logger.print("setMeasuredDimensions");
-    }
 }
