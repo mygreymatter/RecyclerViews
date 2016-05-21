@@ -16,11 +16,6 @@ import java.util.Map;
  */
 public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> {
 
-    /*private int mFirstItem = -1;
-    private int mFirstItemHeight;
-    private int mSecondItemHeight;
-    private int mLastItemHeight;*/
-
     private Map<Integer,Integer> mHeights;
 
     public NamesAdapter(){
@@ -30,7 +25,6 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //Logger.print("Create View");
-        //return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.row, parent, false));
         return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.row_2, parent, false));
     }
 
@@ -39,10 +33,9 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         //Logger.print("Bind View: " + position);
 
         //Logger.print("\n---------------------------------------------------------");
-
         if(mHeights.size() > 0 && mHeights.get(position) != null){
             holder.innerLayout.getLayoutParams().height = mHeights.get(position);
-            Logger.print("Position: " + position + " Height: " + mHeights.get(position));
+            //Logger.print("Position: " + position + " Height: " + mHeights.get(position));
         }
 
         if(position == 6)
@@ -55,17 +48,6 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     public int getItemCount() {
         return 6 + 1;
     }
-
-    /*class ViewHolder extends RecyclerView.ViewHolder {
-        TextView name;
-
-        public ViewHolder(View view) {
-            super(view);
-
-
-            name = (TextView) view.findViewById(R.id.name);
-        }
-    }*/
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -80,8 +62,4 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         }
     }
 
-    public void setItemHeight(int pos,int height){
-        mHeights.put(pos,height);
-        //Logger.print("PUT Position: " + pos + " Height: " + height);
-    }
 }
