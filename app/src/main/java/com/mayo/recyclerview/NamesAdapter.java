@@ -4,11 +4,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -39,9 +37,9 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         }
 
         if(position == 6)
-            holder.name.setText("The End!");
+            holder.rewardName.setText("The End!");
         else
-            holder.name.setText("Item " + position);
+            holder.rewardName.setText("Reward " + position);
     }
 
     @Override
@@ -52,13 +50,13 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     class ViewHolder extends RecyclerView.ViewHolder {
 
         RelativeLayout innerLayout;
-        TextView name;
+        TextView rewardName;
 
         public ViewHolder(View v) {
             super(v);
 
             innerLayout = (RelativeLayout) v.findViewById(R.id.inner_layout);
-            name = (TextView) innerLayout.findViewById(R.id.name);
+            rewardName = (TextView) innerLayout.findViewById(R.id.reward_name);
         }
     }
 

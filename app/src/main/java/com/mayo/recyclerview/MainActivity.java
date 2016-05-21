@@ -1,15 +1,17 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+
+import com.mayo.recyclerview.layouts.CardSlideLayoutManager;
+import com.mayo.recyclerview.layouts.MagneticLayoutManager;
 
 public class MainActivity extends AppCompatActivity implements Callback{
 
     private RecyclerView mRecycler;
     private NamesAdapter adapter;
-    private MagneticLayoutManager manager;
+    private CardSlideLayoutManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,7 +20,8 @@ public class MainActivity extends AppCompatActivity implements Callback{
 
         //LinearLayoutManager manager = new LinearLayoutManager(this);
         //final FixedGridLayoutManager manager = new FixedGridLayoutManager();
-        manager = new MagneticLayoutManager(this);
+        //manager = new MagneticLayoutManager(this);
+        manager = new CardSlideLayoutManager(this);
         //JustLayoutManager manager = new JustLayoutManager();
         //manager.setTotalColumnCount(2);
 
