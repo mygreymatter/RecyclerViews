@@ -1,9 +1,11 @@
 package com.mayo.recyclerview;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -31,15 +33,28 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
         //Logger.print("Bind View: " + position);
 
         //Logger.print("\n---------------------------------------------------------");
-        if(mHeights.size() > 0 && mHeights.get(position) != null){
+        /*if(mHeights.size() > 0 && mHeights.get(position) != null){
             holder.innerLayout.getLayoutParams().height = mHeights.get(position);
             //Logger.print("Position: " + position + " Height: " + mHeights.get(position));
-        }
+        }*/
 
-        if(position == 6)
+        if(position == 6) {
             holder.rewardName.setText("The End!");
-        else
+            holder.rewardName.setGravity(Gravity.CENTER | Gravity.CENTER_VERTICAL);
+
+            holder.pickReward.setVisibility(View.GONE);
+            holder.storeName.setVisibility(View.GONE);
+            holder.storeImage.setVisibility(View.GONE);
+            holder.rewardDetails.setVisibility(View.GONE);
+        }else {
             holder.rewardName.setText("Reward " + position);
+            holder.rewardName.setGravity(Gravity.CENTER);
+
+            holder.pickReward.setVisibility(View.VISIBLE);
+            holder.storeName.setVisibility(View.VISIBLE);
+            holder.storeImage.setVisibility(View.VISIBLE);
+            holder.rewardDetails.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -51,12 +66,23 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
 
         RelativeLayout innerLayout;
         TextView rewardName;
+        TextView storeName;
+        TextView rewardDetails;
+        TextView pickReward;
+        ImageView storeImage;
+
 
         public ViewHolder(View v) {
             super(v);
 
             innerLayout = (RelativeLayout) v.findViewById(R.id.inner_layout);
             rewardName = (TextView) innerLayout.findViewById(R.id.reward_name);
+            storeName = (TextView) innerLayout.findViewById(R.id.store_name);
+            rewardDetails = (TextView) innerLayout.findViewById(R.id.reward_details);
+            pickReward = (TextView) innerLayout.findViewById(R.id.pick_reward);
+
+            storeImage = (ImageView) innerLayout.findViewById(R.id.store_image);
+
         }
     }
 
