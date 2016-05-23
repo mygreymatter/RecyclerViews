@@ -1,4 +1,4 @@
-package com.mayo.recyclerview;
+package com.mayo.recyclerview.layouts;
 
 import android.graphics.PointF;
 import android.support.v7.widget.LinearSmoothScroller;
@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+
+import com.mayo.recyclerview.Logger;
 
 /**
  * Created by mayo on 18/5/16.

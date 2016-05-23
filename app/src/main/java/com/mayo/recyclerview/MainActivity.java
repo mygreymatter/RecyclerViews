@@ -1,15 +1,19 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.WindowManager;
+
+import com.mayo.recyclerview.layouts.CardSlideLayoutManager;
 
 public class MainActivity extends AppCompatActivity implements Callback{
 
     private RecyclerView mRecycler;
     private NamesAdapter adapter;
-    private MagneticLayoutManager manager;
+    private CardSlideLayoutManager manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,7 +22,8 @@ public class MainActivity extends AppCompatActivity implements Callback{
 
         //LinearLayoutManager manager = new LinearLayoutManager(this);
         //final FixedGridLayoutManager manager = new FixedGridLayoutManager();
-        manager = new MagneticLayoutManager(this);
+        //manager = new MagneticLayoutManager(this);
+        manager = new CardSlideLayoutManager(this,getScreenDensity());
         //JustLayoutManager manager = new JustLayoutManager();
         //manager.setTotalColumnCount(2);
 
@@ -42,12 +47,17 @@ public class MainActivity extends AppCompatActivity implements Callback{
     @Override
     public void setFlingAction(final int dy) {
         mRecycler.smoothScrollBy(0,dy);
-        /*new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Logger.print("Scroll");
-                mRecycler.smoothScrollBy(0,dy);
-            }
-        },0);*/
+    }
+
+    private int getScreenDensity() {
+        WindowManager windowManager = getWindowManager();
+        Display display = windowManager.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+
+        //screenHeight = metrics.heightPixels;
+        //screenWidth = metrics.widthPixels;
+        Logger.print("Density: " + metrics.densityDpi + " " + metrics.density);
+        return (int) metrics.density;
     }
 }

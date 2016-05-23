@@ -1,4 +1,4 @@
-package com.mayo.recyclerview;
+package com.mayo.recyclerview.layouts;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -10,6 +10,8 @@ import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.mayo.recyclerview.Logger;
 
 import java.util.HashSet;
 import java.util.List;
