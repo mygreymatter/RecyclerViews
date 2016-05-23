@@ -1,4 +1,4 @@
-package com.mayo.recyclerview;
+package com.mayo.recyclerview.layouts;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -6,6 +6,11 @@ import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.RelativeLayout;
+
+import com.mayo.recyclerview.Callback;
+import com.mayo.recyclerview.Logger;
+import com.mayo.recyclerview.R;
+import com.mayo.recyclerview.Recycler;
 
 import java.util.Map;
 
@@ -30,7 +35,6 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
     private static final int DIRECTION_DOWN = 2;
 
     private boolean isCalledOnce;
-//    private boolean isSettling;
     private int numOfPasses = 0;
 
     private View v;
@@ -81,8 +85,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
         }
 
         mRecyclerViewHeight = getVerticalSpace();
-        mFirstItemHeight = (int) (mRecyclerViewHeight * 0.6f);
-        mDecoratedChildHeight = (int) (mRecyclerViewHeight * 0.2f);
+        mFirstItemHeight = (int) (mRecyclerViewHeight * 0.8f);
+        mDecoratedChildHeight = (int) (mRecyclerViewHeight * 0.1f);
         mSecondItemTop = mFirstItemHeight;
         mSecondItemHeight = mDecoratedChildHeight;
 
@@ -213,6 +217,8 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
                     else
                         r.getLayoutParams().height = mHeights.get(adapterPostion);
 
+                    //v.animate().setDuration(1000).alpha(0.0f).start();
+
                     layoutDecorated(v, 0, 0,
                             mDecoratedChildWidth,
                             mFirstItemHeight);
@@ -245,7 +251,7 @@ public class MagneticLayoutManager extends RecyclerView.LayoutManager {
 
                     mHeights.put(adapterPostion,mSecondItemHeight);
 
-                    v.setBackgroundResource(android.R.color.holo_red_light);
+                    //v.setBackgroundResource(android.R.color.holo_red_light);
                     vTop = mSecondItemTop;
                     vTop += mSecondItemHeight;
 
