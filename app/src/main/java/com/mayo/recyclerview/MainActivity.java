@@ -1,29 +1,21 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.mayo.recyclerview.layouts.CardSlideLayoutManager;
 
-import it.carlom.stikkyheader.core.StikkyHeaderBuilder;
-
 public class MainActivity extends AppCompatActivity implements Callback {
 
+    //directions
+    private static final int DIRECTION_UP = 0;
+    private static final int DIRECTION_DOWN = 1;
     private RecyclerView mRecycler;
     private NamesAdapter adapter;
     private CardSlideLayoutManager manager;
@@ -31,10 +23,6 @@ public class MainActivity extends AppCompatActivity implements Callback {
     private RelativeLayout mHeader;
     private int mHeaderTop = 0;
     private int mFirstItem = 0;
-
-    //directions
-    private static final int DIRECTION_UP = 0;
-    private static final int DIRECTION_DOWN = 1;
     private int mDirection;
 
 
@@ -62,12 +50,12 @@ public class MainActivity extends AppCompatActivity implements Callback {
     }
 
     @Override
-    public void setFirstItem(int item) {
+    public void setHeaderTop(int top) {
 
     }
 
     @Override
-    public void setHeaderTop(int top) {
+    public void setFirstItem(int item) {
 
     }
 
@@ -85,4 +73,6 @@ public class MainActivity extends AppCompatActivity implements Callback {
         Logger.print("Density: " + metrics.densityDpi + " " + metrics.density);
         return (int) metrics.density;
     }
+
+
 }
