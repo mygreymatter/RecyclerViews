@@ -145,7 +145,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 //            Logger.print("After Count: " + count);
             mVisibleRowCount += count;
         }
-//        Logger.print("Rows: " + mVisibleRowCount + " canFit: " + mRowsCanFit + " First Item: " + mFirstItem + " vTop: " + vTop);
+        Logger.print("Rows: " + mVisibleRowCount + " canFit: " + mRowsCanFit + " First Item: " + mFirstItem + " vTop: " + vTop);
 
     }
 
@@ -219,6 +219,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         } else if (scrolledBy < 0) {
             Logger.print("Before Else Second Item Top: " + mSecondItemTop + " First Bottom: " + (mFirstItemHeight + 165));
             if(hasTransition){
+                vTop = mSecondItemTop;
                 mSecondItemTop = mFirstItemTop - scrolledBy;
             }else{
                 mSecondItemTop -= scrolledBy;
@@ -239,14 +240,14 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     }
 
     private int getThirdItem(int scrolledBy) {
-        vTop = 0;
+        if(!hasTransition)
+            vTop = 0;
 
         if (mDirection == DIRECTION_NONE) {
             vTop = mSecondItemTop + mDecoratedChildHeight;
         } else if (mDirection == DIRECTION_UP) {
 
             vTop = mSecondItemTop + mDecoratedChildHeight;
-
             if (vTop < 165 + mFirstItemHeight) {
                 //if true, set the top of next item to be after the current visible item
                 //Logger.print("Third Top Current Visible");
@@ -256,9 +257,10 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         } else if (mDirection == DIRECTION_DOWN) {
             if(hasTransition){
                 //vTop = /*165 + mFirstItemHeight + scrolledBy*//*mSecondItemTop + mFirstItemHeight*/;
+                Logger.print("Before Has Transition vTop: " + vTop);
                 vTop -= scrolledBy;
                 hasTransition = false;
-                Logger.print("Has Transition vTop: " + vTop);
+                Logger.print("After Has Transition vTop: " + vTop);
             }else if(mSecondItemTop < UP_RANGE + 100){
                 vTop = 165 + mFirstItemHeight;
                 Logger.print("if Third Top Down vTop: " + vTop);
