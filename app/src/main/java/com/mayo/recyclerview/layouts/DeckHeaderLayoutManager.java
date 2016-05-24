@@ -47,6 +47,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     private Context mContext;
     private Callback mCallback;
     private boolean hasTransition;
+    private int vTop;
 
     public DeckHeaderLayoutManager(Context context, int density) {
         mContext = context;
@@ -133,6 +134,16 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         mVisibleRowCount = mRowsCanFit;
         int total = getItemCount();
 
+        if(mDirection != DIRECTION_NONE){
+            int count = (mRecyclerViewHeight - vTop)/mDecoratedChildHeight;
+
+            if((mRecyclerViewHeight - vTop) - (count * mDecoratedChildHeight) > 0)
+                count++;
+
+            mVisibleRowCount += count;
+
+        }
+
         /*if (mSecondItemTop < 165 + mFirstItemHeight && mDirection == DIRECTION_UP)
             mVisibleRowCount++;
         else if (mDirection == DIRECTION_DOWN) {
@@ -188,7 +199,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         if (scrolledBy > 0) {
             mFirstItemTop = mFirstItemHeight + mHeaderTop;
         } else if (scrolledBy < 0) {
-            Logger.print("FirstItem: " + mFirstItem + " SecondTop: " + mSecondItemTop);
+            //Logger.print("FirstItem: " + mFirstItem + " SecondTop: " + mSecondItemTop);
             mFirstItemTop = mFirstItemHeight + mHeaderTop;
         }
 
@@ -204,8 +215,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
             } else if (mFirstItemTop < UP_RANGE) {//starts to push the 2nd row
                 mSecondItemTop = mFirstItemHeight + mDecoratedChildHeight - (UP_RANGE - mFirstItemTop);
                 Logger.print("else if Second Top: " + mSecondItemTop);
-                if (mSecondItemTop < mFirstItemHeight + 150) {//stick the 2nd row
-                    mSecondItemTop = mFirstItemHeight + 150;
+                if (mSecondItemTop < mFirstItemHeight + 165) {//stick the 2nd row
+                    mSecondItemTop = mFirstItemHeight + 165;
                     Logger.print("else if if Second Top: " + mSecondItemTop);
                 }
             } else {//during the first row being moved up
@@ -214,27 +225,25 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
             }
 
         } else if (scrolledBy < 0) {
-            Logger.print("Before Else Second Item Top: " + mSecondItemTop);
+            Logger.print("Before Else Second Item Top: " + mSecondItemTop + " First Bottom: " + (mFirstItemHeight + 165));
             if(hasTransition){
                 mSecondItemTop = mFirstItemTop - scrolledBy;
             }else{
                 mSecondItemTop -= scrolledBy;
             }
 
-            Logger.print("After Else Second Item Top: " + mSecondItemTop);
+            Logger.print("After Else Second Item Top: " + mSecondItemTop + " First Bottom: " + (mFirstItemHeight + 165));
             if(mSecondItemTop > mFirstItemHeight + mDecoratedChildHeight) {
-                mSecondItemTop = mFirstItemHeight + mDecoratedChildHeight;
-                Logger.print("Else IF Second Item Top: " + mSecondItemTop + " " + (mFirstItemTop + mFirstItemHeight));
+                mSecondItemTop = mFirstItemHeight + mDecoratedChildHeight ;
+                Logger.print("Else IF Second Item Top: " + mSecondItemTop + " " + (165 + mFirstItemHeight));
             }
-
-
         }
 
         Logger.print("UpdateSecondTop - sTop: " + mSecondItemTop  + " FirstTop " + mFirstItemTop);
     }
 
     private int getThirdItem(int scrolledBy) {
-        int vTop = 0;
+        vTop = 0;
 
         if (mDirection == DIRECTION_NONE) {
             vTop = mSecondItemTop + mDecoratedChildHeight;
@@ -250,7 +259,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
         } else if (mDirection == DIRECTION_DOWN) {
             if(hasTransition){
-                vTop = 165 + mFirstItemHeight + scrolledBy;
+                vTop = /*165 + mFirstItemHeight + scrolledBy*/mSecondItemTop + mFirstItemHeight;
                 hasTransition = false;
             }else if(mSecondItemTop < UP_RANGE + 100){
                 vTop = 165 + mFirstItemHeight;
@@ -295,7 +304,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
             adapterPostion = getAdapterPosition(i, mFirstItem);
             //Logger.print("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
 
-            if (adapterPostion == -1 || adapterPostion == getItemCount())
+            if (adapterPostion == -1 || adapterPostion >= getItemCount())
                 continue;
             else if (i == 0) {
                 v = recycler.getViewForPosition(0);
@@ -312,9 +321,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             mFirstItemHeight);
 
-                    Logger.print(i +
-                            " Top: " + mHeaderTop +
-                            " FirstItem: " + mFirstItem);
+                    //Logger.print(i + " Top: " + mHeaderTop + " FirstItem: " + mFirstItem);
 
                     //vTop += mHeaderTop;
 
@@ -324,13 +331,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             mFirstItemTop + mFirstItemHeight);
 
-                    Logger.print(adapterPostion +
-                            " Top: " + mFirstItemTop);
-                    if (mDirection == DIRECTION_UP) {
-                        if (mFirstItemTop > UP_RANGE) {
+                    //Logger.print(adapterPostion + " Top: " + mFirstItemTop);
 
-                        }
-                    }
                     break;
                 case 2:
 
@@ -360,16 +362,6 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
             addView(v);
         }
-
-        //check if the second item becomes the first
-        /*if (mSecondItemTop <= (mFirstItemHeight + mHeaderTop)) {
-            //set the current second as the first
-            mFirstItem++;
-            mFirstItemTop = (mFirstItemHeight + mHeaderTop);
-            mSecondItemTop = (mFirstItemHeight + mHeaderTop) + mFirstItemHeight;
-            //mSecondItemHeight = mDecoratedChildHeight;
-            *//*Logger.print("----------------------Up Transition--------------------------");*//*
-        }*/
 
     }
 
