@@ -26,16 +26,6 @@
             android:textSize="30sp"
             android:padding="10dp" />
 
-        <!--<ImageView
-            android:id="@+id/store_image"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="5dp"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/reward_name"
-            android:background="@drawable/ic_circle_2" />
--->
-
         <de.hdodenhof.circleimageview.CircleImageView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/store_image"

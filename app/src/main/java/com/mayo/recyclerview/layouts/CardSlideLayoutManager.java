@@ -321,12 +321,6 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
         //Logger.print("Scrolled By: " + dy);
 
-        //mCallback.setFirstItem(mFirstItem);
-        if(mCallback.getHeaderTop() > -1120) {
-            mCallback.setHeaderTop(dy);
-            return 0;
-        }
-
         if (getChildCount() == 0)
             return 0;
 
