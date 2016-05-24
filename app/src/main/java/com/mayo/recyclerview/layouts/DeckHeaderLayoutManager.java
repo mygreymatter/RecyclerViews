@@ -166,7 +166,7 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
             //Logger.print("Header Top: " + mHeaderTop);
         } else {
             //check whether the second item is at the bottom
-            if (mSecondItemTop == mFirstItemHeight + mDecoratedChildHeight) {
+            if (mSecondItemTop == mFirstItemHeight + mDecoratedChildHeight && mFirstItem == 1) {
                 mHeaderTop -= scrolledBy;
                 //Logger.print("If Header Top: " + mHeaderTop + " scrolled: " + scrolledBy);
                 if (mHeaderTop > 0) {
@@ -255,17 +255,19 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
         } else if (mDirection == DIRECTION_DOWN) {
             if(hasTransition){
-                vTop = /*165 + mFirstItemHeight + scrolledBy*/mSecondItemTop + mFirstItemHeight;
+                //vTop = /*165 + mFirstItemHeight + scrolledBy*//*mSecondItemTop + mFirstItemHeight*/;
+                vTop -= scrolledBy;
                 hasTransition = false;
+                Logger.print("Has Transition vTop: " + vTop);
             }else if(mSecondItemTop < UP_RANGE + 100){
                 vTop = 165 + mFirstItemHeight;
-//                Logger.print("if Third Top Down vTop: " + vTop);
+                Logger.print("if Third Top Down vTop: " + vTop);
             }else{
                 vTop = mSecondItemTop + mDecoratedChildHeight - (UP_RANGE - mSecondItemTop);
-                //Logger.print("If Third Top Down vTop: " + vTop);
+                Logger.print("If Third Top Down vTop: " + vTop);
                 if(vTop > mFirstItemHeight + (2 * mDecoratedChildHeight)){
-                    vTop = mFirstItemHeight + (2 * mDecoratedChildHeight);
-                    //Logger.print("Else if Third Top Down vTop: " + vTop);
+                    vTop = mFirstItemHeight + (2 * mDecoratedChildHeight) - 15;
+                    Logger.print("Else if Third Top Down vTop: " + vTop);
                 }
 
 
@@ -361,9 +363,11 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         Logger.print("---------------------------------------------------");
         Logger.print("Scrolled By: " + dy);
 
-
         if (getChildCount() == 0)
             return 0;
+
+        if(mHeaderTop == 0 && dy < 0)
+            return  0;
 
         int delta;
         boolean bottomBoundReached = false;
@@ -451,12 +455,28 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     public void onScrollStateChanged(int state) {
         switch (state) {
             case RecyclerView.SCROLL_STATE_IDLE:
-                //Logger.print("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down"));
+                Logger.print("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down") +
+                        " sTop: " + mSecondItemTop + " UP Range: " + UP_RANGE + " DOWN Range: " + DOWN_RANGE);
 
-                if (mSecondItemTop < UP_RANGE && mDirection == DIRECTION_UP) {
-                    //mCallback.setFlingAction(mSecondItemTop - (mFirstItemHeight+mHeaderTop));
-                } else if (mSecondItemTop > DOWN_RANGE && mDirection == DIRECTION_DOWN) {
-                    //mCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
+                switch (mDirection){
+                    case DIRECTION_UP:
+
+                        if(mFirstItem == 1 && mFirstItemTop > 165 && mFirstItemTop < UP_RANGE){
+                            mCallback.setFlingAction(mFirstItemTop - 165);
+                        }else if(mFirstItem >= 1 && mFirstItemTop == 165 && mSecondItemTop < UP_RANGE){
+                            mCallback.setFlingAction(mSecondItemTop - mFirstItemTop);
+                        }
+
+                        break;
+                    case DIRECTION_DOWN:
+
+                        if(mFirstItem == 1 && mFirstItemTop > DOWN_RANGE && mHeaderTop < 0){
+                            mCallback.setFlingAction(mFirstItem - mFirstItemHeight - 5);
+                        }else if(mFirstItem >= 1 && mFirstItemTop == 165 && mSecondItemTop > DOWN_RANGE){
+                            mCallback.setFlingAction(mSecondItemTop - (mFirstItemHeight + 165));
+                        }
+
+                        break;
                 }
 
                 break;
@@ -471,5 +491,11 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
     public void setScrolling(boolean scrolling) {
         canScroll = scrolling;
+    }
+
+    @Override
+    public int computeVerticalScrollOffset(RecyclerView.State state) {
+        Logger.print("computeVerScrOff");
+        return super.computeVerticalScrollOffset(state);
     }
 }
