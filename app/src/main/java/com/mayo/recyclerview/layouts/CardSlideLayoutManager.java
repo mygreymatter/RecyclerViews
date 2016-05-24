@@ -17,9 +17,7 @@ import com.mayo.recyclerview.R;
  */
 public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
-    //DPPX - 1 DP(Density-Independent Pixel) has pixels
-
-    private int densityOfScreen;
+    private int densityOfScreen;//DPPX - 1 DP(Density-Independent Pixel) has pixels
     private int UP_RANGE;
     private int DOWN_RANGE;
     private int mDecoratedChildWidth;
@@ -41,6 +39,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
     private View v;
     private RelativeLayout r;
+    private boolean canScroll;
 
     //private Map<Integer,Integer> mHeights;
     private Context mContext;
@@ -52,7 +51,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
         densityOfScreen = density;
         UP_RANGE = 333 * density;
-        DOWN_RANGE = 33 * density;
+        DOWN_RANGE = 30 * density;
     }
 
     @Override
@@ -88,7 +87,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             detachAndScrapView(scrap, recycler);
         }
 
-        mRecyclerViewHeight = getVerticalSpace();
+        mRecyclerViewHeight = /*getVerticalSpace()*/1536;
         mDecoratedChildHeight = (30 + 20 + 10) * densityOfScreen;
         mSecondItemTop = mFirstItemHeight;
 
@@ -102,10 +101,10 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             mRowsCanFit++;
         }
 
-        Logger.print("Recycler Height: " + mRecyclerViewHeight +
+        /*Logger.print("Recycler Height: " + mRecyclerViewHeight +
                 " FirstItem Height: " + mFirstItemHeight +
                 " DecoratedHeight: " + mDecoratedChildHeight +
-                " RowsCanFit: " + mRowsCanFit);
+                " RowsCanFit: " + mRowsCanFit);*/
 
         updateMagnetVisibleRowCount();
         detachAndScrapAttachedViews(recycler);
@@ -122,21 +121,6 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
      * update the rows that can be shown after magnetic scroll
      */
     private void updateMagnetVisibleRowCount() {
-        /*mVisibleRowCount = 1;//first Item always visible
-
-        int restOfArea = mRecyclerViewHeight - mSecondItemTop - mSecondItemHeight;
-        mVisibleRowCount++;//second item also visible
-
-        if (restOfArea < mDecoratedChildHeight) {
-            mVisibleRowCount++;
-        } else {
-            int remainingRows = restOfArea / mDecoratedChildHeight*//*the rest of items have same height*//*;
-            mVisibleRowCount += remainingRows;
-
-            int diff = restOfArea - remainingRows * mDecoratedChildHeight;
-            if (diff > 0)
-                mVisibleRowCount++;//some space left. a row can be accommodated
-        }*/
 
         mVisibleRowCount = mRowsCanFit;
         if(mSecondItemTop < UP_RANGE && mDirection == DIRECTION_UP)
@@ -148,7 +132,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        Logger.print("Rows: " + mVisibleRowCount);
+        //Logger.print("Rows: " + mVisibleRowCount);
 
     }
 
@@ -407,7 +391,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public boolean canScrollVertically() {
-        return true;
+        return canScroll;
     }
 
     /**
@@ -454,5 +438,9 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 //                Logger.print("Scroll Settling");
                 break;
         }
+    }
+
+    public void setScrolling(boolean scrolling){
+        canScroll = scrolling;
     }
 }
