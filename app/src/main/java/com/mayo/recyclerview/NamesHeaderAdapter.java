@@ -67,7 +67,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void configureItemView(ItemHolder holder, int position) {
-        if (position == 6) {
+        if (position == getItemCount() - 1) {
             holder.rewardName.setText("The End!");
             holder.rewardName.setGravity(Gravity.CENTER | Gravity.CENTER_VERTICAL);
 
@@ -92,7 +92,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
-        return 6 + 1;
+        return 10 + 1;
     }
 
     class ItemHolder extends RecyclerView.ViewHolder {
