@@ -7,7 +7,6 @@ import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -23,8 +22,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
 
     private int densityOfScreen;//DPPX - 1 DP(Density-Independent Pixel) has pixels
-    private int UP_RANGE;
-    private int DOWN_RANGE;
+    private int UP_THRESHOLD;
+    private int DOWN_THRESHOLD;
     private int HEADER_TOP;
     private int HEADER_VISIBLE_AREA;
 
@@ -62,8 +61,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         mCallback = (Callback) context;
 
         densityOfScreen = density;
-        //UP_RANGE = 100 * density;
-        //DOWN_RANGE = 30 * density;
+        //UP_THRESHOLD = 100 * density;
+        //DOWN_THRESHOLD = 30 * density;
     }
 
     @Override
@@ -103,8 +102,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         }
 
         mRecyclerViewHeight = getVerticalSpace();
-        UP_RANGE = (int) (0.7 * mRecyclerViewHeight);
-        DOWN_RANGE = (int) (0.18 * mRecyclerViewHeight);
+        UP_THRESHOLD = (int) (0.7 * mRecyclerViewHeight);
+        DOWN_THRESHOLD = (int) (0.18 * mRecyclerViewHeight);
         mDecoratedChildHeight = (30 + 20 + 10) * densityOfScreen;
         mSecondItemTop = mFirstItemHeight;
 
@@ -219,8 +218,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
             if (mFirstItemTop == HEADER_VISIBLE_AREA) {//when the header becomes sticky
                 mSecondItemTop -= scrolledBy;
                 //Logger.print("if Second Top: " + mSecondItemTop);
-            } else if (mFirstItemTop < UP_RANGE) {//starts to push the 2nd row
-                mSecondItemTop = mFirstItemHeight + mDecoratedChildHeight - (UP_RANGE - mFirstItemTop);
+            } else if (mFirstItemTop < UP_THRESHOLD) {//starts to push the 2nd row
+                mSecondItemTop = mFirstItemHeight + mDecoratedChildHeight - (UP_THRESHOLD - mFirstItemTop);
                 //Logger.print("else if Second Top: " + mSecondItemTop);
                 if (mSecondItemTop < mFirstItemHeight + HEADER_VISIBLE_AREA) {//stick the 2nd row
                     mSecondItemTop = mFirstItemHeight + HEADER_VISIBLE_AREA;
@@ -275,11 +274,11 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                 vTop -= scrolledBy;
                 hasTransition = false;
 //                Logger.print("After Has Transition vTop: " + vTop);
-            } else if (mSecondItemTop < UP_RANGE) {
+            } else if (mSecondItemTop < UP_THRESHOLD) {
                 vTop = HEADER_VISIBLE_AREA + mFirstItemHeight;
 //                Logger.print("if Third Top Down vTop: " + vTop);
             } else {
-                vTop = mSecondItemTop + mDecoratedChildHeight - (UP_RANGE - mSecondItemTop);
+                vTop = mSecondItemTop + mDecoratedChildHeight - (UP_THRESHOLD - mSecondItemTop);
 //                Logger.print("If Third Top Down vTop: " + vTop);
                 if (vTop > mFirstItemHeight + (2 * mDecoratedChildHeight)) {
                     vTop = mFirstItemHeight + (2 * mDecoratedChildHeight) - 15;
@@ -552,19 +551,19 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         switch (state) {
             case RecyclerView.SCROLL_STATE_IDLE:
                 Logger.print("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down") +
-                        " sTop: " + mSecondItemTop + " UP Range: " + UP_RANGE + " DOWN Range: " + DOWN_RANGE);
+                        " sTop: " + mSecondItemTop + " UP Range: " + UP_THRESHOLD + " DOWN Range: " + DOWN_THRESHOLD);
 
                 switch (mDirection) {
                     case DIRECTION_UP:
 
                         if (!bottomBoundReached) {
                             if (mFirstItem == 1 && mFirstItemTop > HEADER_VISIBLE_AREA) {
-                                if(mFirstItemTop < UP_RANGE)
+                                if(mFirstItemTop < UP_THRESHOLD)
                                     mCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
                                 else
                                     mCallback.setFlingAction(mHeaderTop);
                             } else if (mFirstItem >= 1 && mFirstItemTop == HEADER_VISIBLE_AREA) {
-                                if(mSecondItemTop < UP_RANGE)
+                                if(mSecondItemTop < UP_THRESHOLD)
                                     mCallback.setFlingAction(mSecondItemTop - mFirstItemTop);
                                 else
                                     mCallback.setFlingAction(mSecondItemTop - (HEADER_VISIBLE_AREA + mFirstItemHeight));
@@ -574,10 +573,10 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                         break;
                     case DIRECTION_DOWN:
 
-                        if (mFirstItem == 1 && mFirstItemTop > DOWN_RANGE && mHeaderTop < 0) {
+                        if (mFirstItem == 1 && mFirstItemTop > DOWN_THRESHOLD && mHeaderTop < 0) {
                             mCallback.setFlingAction(mFirstItemTop - mFirstItemHeight - 5);
                         } else if (mFirstItem >= 1 && mFirstItemTop == HEADER_VISIBLE_AREA) {
-                            if(mSecondItemTop > DOWN_RANGE)
+                            if(mSecondItemTop > DOWN_THRESHOLD)
                                 mCallback.setFlingAction(mSecondItemTop - (mFirstItemHeight + HEADER_VISIBLE_AREA));
                             else
                                 mCallback.setFlingAction(mSecondItemTop - HEADER_VISIBLE_AREA);
