@@ -17,7 +17,7 @@
         <TextView
             android:id="@+id/reward_name"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:layout_alignParentTop="true"
             android:gravity="center"
             android:textStyle="normal"
@@ -26,53 +26,61 @@
             android:textSize="30sp"
             android:padding="10dp" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/store_image"
-            android:layout_below="@+id/reward_name"
+        <LinearLayout
+            android:id="@+id/info_layout"
+            android:layout_width="match_parent"
             android:layout_centerHorizontal="true"
-            android:layout_width="96dp"
-            android:src="@drawable/hugh"
-            android:layout_height="96dp"
-            app:civ_border_width="2dp"
-            app:civ_border_color="@android:color/holo_red_dark"/>
+            android:layout_below="@+id/reward_name"
+            android:orientation="vertical"
+            android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/store_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/store_image"
-            android:gravity="center"
-            android:textColor="@android:color/black"
-            android:text="Store Name"
-            android:textSize="25sp"
-            android:layout_marginTop="10dp" />
+            <de.hdodenhof.circleimageview.CircleImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/store_image"
+                android:layout_width="96dp"
+                android:src="@drawable/hugh"
+                android:layout_gravity="center"
+                android:layout_height="96dp"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@android:color/holo_red_dark"/>
 
-        <TextView
-            android:id="@+id/reward_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/store_name"
-            android:gravity="center"
-            android:padding="10dp"
-            android:background="#E8E8E8"
-            android:textColor="@android:color/black"
-            android:text="@string/fake_text"
-            android:textSize="20sp"
-            android:layout_marginTop="10dp" />
+            <TextView
+                android:id="@+id/store_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/store_image"
+                android:gravity="center"
+                android:textColor="@android:color/black"
+                android:text="Store Name"
+                android:textSize="25sp"
+                android:layout_marginTop="10dp" />
 
-        <TextView
-            android:id="@+id/pick_reward"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/reward_details"
-            android:background="@android:color/holo_red_dark"
-            android:gravity="center"
-            android:layout_marginTop="10dp"
-            android:textColor="@android:color/white"
-            android:padding="10dp"
-            android:text="Pick"
-            android:textSize="20sp" />
+            <TextView
+                android:id="@+id/reward_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/store_name"
+                android:gravity="center"
+                android:padding="10dp"
+                android:background="#E8E8E8"
+                android:textColor="@android:color/black"
+                android:text="@string/fake_text"
+                android:textSize="20sp"
+                android:layout_marginTop="10dp" />
+
+            <TextView
+                android:id="@+id/pick_reward"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/reward_details"
+                android:background="@android:color/holo_red_dark"
+                android:gravity="center"
+                android:layout_marginTop="10dp"
+                android:textColor="@android:color/white"
+                android:padding="10dp"
+                android:text="Pick"
+                android:textSize="20sp" />
+        </LinearLayout>
 
     </RelativeLayout>
 
