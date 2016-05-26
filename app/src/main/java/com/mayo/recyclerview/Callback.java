@@ -5,5 +5,4 @@ package com.mayo.recyclerview;
  */
 public interface Callback {
     void setFlingAction(int dy);
-    void setUpAnimations(int pos, int percentage);
 }
