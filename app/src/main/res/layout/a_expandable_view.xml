@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@android:color/white"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context="com.mayo.recyclerview.layouts.ExpandableViewActivity">
+
 
     <RelativeLayout
         android:id="@+id/inner_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/top_border"
-        android:orientation="vertical">
+        android:background="@android:color/white">
 
         <TextView
             android:id="@+id/reward_name"
@@ -23,22 +25,22 @@
             android:textSize="25sp"
             android:textStyle="normal" />
 
-        <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/store_image"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_below="@+id/reward_name"
             android:layout_centerHorizontal="true"
-            android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:src="@drawable/hugh"
             app:civ_border_color="@android:color/holo_red_dark"
             app:civ_border_width="2dp" />
 
         <LinearLayout
-            android:id="@+id/store_details_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/store_details_layout"
             android:layout_below="@+id/store_image"
             android:layout_marginTop="10dp"
             android:orientation="vertical">
@@ -91,3 +93,4 @@
         </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>
+

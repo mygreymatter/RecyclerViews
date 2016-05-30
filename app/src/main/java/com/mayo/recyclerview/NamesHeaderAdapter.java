@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,9 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private final static int HEADER = 0;
     private final static int ITEM = 1;
+    private int incrementedBy;
+    private boolean hasExpanded;
+    private int mImageInitialHeight;
 
     public NamesHeaderAdapter() {
     }
@@ -32,9 +36,10 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        //Logger.print("Create View");
+//        Logger.print("-------------------Create View-----------------------------");
         RecyclerView.ViewHolder holder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
@@ -42,6 +47,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             case HEADER:
                 View headerView = inflater.inflate(R.layout.header, parent, false);
                 holder = new HeaderHolder(headerView);
+
                 break;
             case ITEM:
                 View itemView = inflater.inflate(R.layout.row_2, parent, false);
@@ -53,7 +59,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-
+        //Logger.print("Bind View: " + position);
         switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
@@ -87,7 +93,17 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void configureHeaderView(HeaderHolder holder) {
-        //holder.areaName.setTextColor(23);
+        if (Recycler.getInstance().hasExpanded) {
+            final ImageView iv = (ImageView) holder.innerLayout.findViewById(R.id.store_image);
+
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv.getLayoutParams();
+//            Logger.print("Binding Image Dimension: " + Recycler.getInstance().imageDimension + " " + params.height);
+            params.height = Recycler.getInstance().imageDimension;
+            params.width = Recycler.getInstance().imageDimension;
+            iv.setLayoutParams(params);
+
+            holder.innerLayout.requestLayout();
+        }
     }
 
     @Override
@@ -128,20 +144,23 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextView spotRewards;
         CircleImageView storeImage;
 
+        RelativeLayout innerLayout;
+
 
         public HeaderHolder(View v) {
             super(v);
 
-            rewardName = (TextView) v.findViewById(R.id.reward_name);
-            storeName = (TextView) v.findViewById(R.id.store_name);
-            areaName = (TextView) v.findViewById(R.id.area_name);
-            instruction = (TextView) v.findViewById(R.id.instruction);
-            spotRewards = (TextView) v.findViewById(R.id.spot_rewards);
+            innerLayout = (RelativeLayout) v.findViewById(R.id.inner_layout);
 
-            storeImage = (CircleImageView) v.findViewById(R.id.store_image);
+            rewardName = (TextView) innerLayout.findViewById(R.id.reward_name);
+            storeName = (TextView) innerLayout.findViewById(R.id.store_name);
+            areaName = (TextView) innerLayout.findViewById(R.id.area_name);
+            instruction = (TextView) innerLayout.findViewById(R.id.instruction);
+            spotRewards = (TextView) innerLayout.findViewById(R.id.spot_rewards);
+
+            storeImage = (CircleImageView) innerLayout.findViewById(R.id.store_image);
 
         }
     }
-
 
 }

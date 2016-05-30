@@ -12,7 +12,8 @@ public class Recycler extends Application {
 
     private static Recycler mInstance = null;
     public Map<Integer,Integer> viewHeights = new HashMap<>();
-
+    public boolean hasExpanded;
+    public int imageDimension;
 
     @Override
     public void onCreate() {
