@@ -5,10 +5,9 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 import com.mayo.recyclerview.Callback;
 import com.mayo.recyclerview.Logger;
 import com.mayo.recyclerview.R;
+import com.mayo.recyclerview.Recycler;
 
 /**
  * Created by mayo on 18/5/16.
@@ -57,6 +57,9 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     private Callback mCallback;
     private boolean hasTransition;
     private int vTop;
+    private int mHeaderImageInitialHeight;
+    private int incrementedBy = 0;
+    private boolean justStarted;
 
     public DeckHeaderLayoutManager(Context context, int density) {
         mContext = context;
@@ -72,13 +75,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                 RecyclerView.LayoutParams.WRAP_CONTENT);
     }
 
-    RecyclerView.Recycler recycler;
-    RecyclerView.State state;
-
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        this.recycler = recycler;
-        this.state = state;
 
         if (getItemCount() == 0) {
             detachAndScrapAttachedViews(recycler);
@@ -151,19 +149,21 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
      */
     private void updateMagnetVisibleRowCount() {
         mVisibleRowCount = mRowsCanFit;
-        int total = getItemCount();
 
-        //Logger.print("Default Rows: " + mRowsCanFit + " vTop: " + vTop);
-        if (mDirection != DIRECTION_NONE) {
+        if (!Recycler.getInstance().hasExpanded) {
+            int total = getItemCount();
+            //Logger.print("Default Rows: " + mRowsCanFit + " vTop: " + vTop);
+            if (mDirection != DIRECTION_NONE) {
 
-            int count = (mRecyclerViewHeight - vTop) / mDecoratedChildHeight;
+                int count = (mRecyclerViewHeight - vTop) / mDecoratedChildHeight;
 //              Logger.print("Before Count: " + count);
-            if ((mRecyclerViewHeight - vTop) - (count * mDecoratedChildHeight) > 0) {
-                count++;
-            }
+                if ((mRecyclerViewHeight - vTop) - (count * mDecoratedChildHeight) > 0) {
+                    count++;
+                }
 
-            //Logger.print("After Count: " + count);
-            mVisibleRowCount += count;
+                //Logger.print("After Count: " + count);
+                mVisibleRowCount += count;
+            }
         }
         //Logger.print("Rows: " + mVisibleRowCount + " canFit: " + mRowsCanFit + " First Item: " + mFirstItem + " vTop: " + vTop);
 
@@ -171,22 +171,33 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
     private void updateHeaderTop(int scrolledBy) {
         if (scrolledBy > 0) {
-            mHeaderTop -= scrolledBy;
-            if (mHeaderTop < HEADER_TOP)
-                mHeaderTop = HEADER_TOP;
+            if (mHeaderTop == 0 && Recycler.getInstance().hasExpanded) {
+                if (incrementedBy > 0) {
+                    setElasticEffect(scrolledBy);
+                } else {
+                    Recycler.getInstance().hasExpanded = false;
+                }
+            } else {
 
-            if (mSecondItemTop <= HEADER_VISIBLE_AREA) {
-                //hasTransition = true;
-                mFirstItem++;
-//                Logger.print("------------------UP Transition------------------------ First Item: " + mFirstItem);
-                mFirstItemTop = mSecondItemTop;
-                mSecondItemTop = mFirstItemTop + mFirstItemHeight;
+                mHeaderTop -= scrolledBy;
+
+                if (mHeaderTop < HEADER_TOP)
+                    mHeaderTop = HEADER_TOP;
+
+                if (mSecondItemTop <= HEADER_VISIBLE_AREA) {
+                    mFirstItem++;
+                    Logger.print("------------------UP Transition------------------------ First Item: " + mFirstItem);
+                    mFirstItemTop = mSecondItemTop;
+                    mSecondItemTop = mFirstItemTop + mFirstItemHeight;
+                }
             }
-
-            //Logger.print("Header Top: " + mHeaderTop);
+//            Logger.print("Up Header Top: " + mHeaderTop + " " + HEADER_TOP + " " + Recycler.getInstance().hasExpanded);
         } else {
-            //check whether the second item is at the bottom
-            if (mSecondItemTop >= mFirstItemHeight + HEADER_VISIBLE_AREA && mFirstItem == 1) {
+            if (mHeaderTop == 0) {
+                //Logger.print("Header is at top.");
+                setElasticEffect(scrolledBy);
+                //check whether the second item is at the bottom
+            } else if (mSecondItemTop >= mFirstItemHeight + HEADER_VISIBLE_AREA && mFirstItem == 1) {
                 mHeaderTop -= scrolledBy;
                 //Logger.print("If Header Top: " + mHeaderTop + " scrolled: " + scrolledBy);
                 if (mHeaderTop > 0) {
@@ -205,6 +216,45 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
 
         /*Logger.print("Header Top: " + mHeaderTop + " scrolled: " + scrolledBy +
                 " FirstTop: " + mFirstItemTop + " sTop: " + mSecondItemTop + " " + mDirection + " Transition: " + hasTransition);*/
+    }
+
+    private void setElasticEffect(int scrolledBy) {
+        if (incrementedBy == 0) {
+            v = getChildAt(0);
+            final RelativeLayout mLayoutLinear = (RelativeLayout) v.findViewById(R.id.inner_layout);
+            ImageView iv = (ImageView) mLayoutLinear.findViewById(R.id.store_image);
+
+            Recycler.getInstance().imageDimension = iv.getHeight();
+            mHeaderImageInitialHeight = iv.getHeight();
+            //Logger.print("Initialize: " + iv.getHeight());
+            incrementedBy = -scrolledBy;
+        }
+
+        if (scrolledBy < 0) {
+            if (Recycler.getInstance().imageDimension >= mHeaderImageInitialHeight + 300) {
+                Recycler.getInstance().imageDimension = mHeaderImageInitialHeight + 300;
+            } else {
+                incrementedBy -= scrolledBy;
+                Recycler.getInstance().imageDimension -= scrolledBy;
+            }
+//            Logger.print("Computed Dimension: " + Recycler.getInstance().imageDimension);
+            Recycler.getInstance().hasExpanded = true;
+
+        } else {
+
+            if (Recycler.getInstance().imageDimension <= mHeaderImageInitialHeight) {
+                Recycler.getInstance().imageDimension = mHeaderImageInitialHeight;
+                Recycler.getInstance().hasExpanded = false;
+            } else {
+                incrementedBy -= scrolledBy;
+                if (Recycler.getInstance().imageDimension - scrolledBy < mHeaderImageInitialHeight)
+                    Recycler.getInstance().imageDimension = mHeaderImageInitialHeight;
+                else
+                    Recycler.getInstance().imageDimension -= scrolledBy;
+            }
+
+//            Logger.print("Computed Dimension: " + Recycler.getInstance().imageDimension + " " + incrementedBy);
+        }
     }
 
     private void updateFirstItem(int scrolledBy) {
@@ -325,39 +375,54 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                 case 0:
                     layoutDecorated(v, 0, mHeaderTop,
                             mDecoratedChildWidth,
-                            mFirstItemHeight);
+                            mFirstItemHeight + incrementedBy);
 
-                    //Logger.print(i + " Top: " + mHeaderTop + " FirstItem: " + mFirstItem);
+                 /*   Logger.print(i + " Height: " + (mFirstItemHeight + incrementedBy) + " " +
+                            Recycler.getInstance().hasExpanded + " " + incrementedBy);*/
 
                     break;
                 case 1:
+                    if (Recycler.getInstance().hasExpanded)
+                        mFirstItemTop = mFirstItemHeight + incrementedBy;
+
                     layoutDecorated(v, 0, mFirstItemTop,
                             mDecoratedChildWidth,
                             mFirstItemTop + mFirstItemHeight);
-                    //Logger.print(adapterPostion + " Top: " + mFirstItemTop);
+
+                    Logger.print(adapterPostion + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight +
+                            " Expanding: " + Recycler.getInstance().hasExpanded +
+                            " JustStarted: " + justStarted + " " + incrementedBy);
 
                     if (mDirection != DIRECTION_NONE)
                         setAnimations(v, mFirstItemTop);
 
                     break;
                 case 2:
-                    /*Logger.print(adapterPostion + " " + (getItemCount() - 1) +
-                            " sTop: " + mSecondItemTop + " " + (HEADER_VISIBLE_AREA + mFirstItemHeight));*/
 
                     if (adapterPostion == getItemCount() - 1 && mSecondItemTop < HEADER_VISIBLE_AREA + mFirstItemHeight) {
                         mSecondItemTop = HEADER_VISIBLE_AREA + mFirstItemHeight;
                         Logger.print("second Top set");
                     }
 
+                    if (Recycler.getInstance().hasExpanded)
+                        mSecondItemTop = mFirstItemTop + mDecoratedChildHeight;
+
                     layoutDecorated(v, 0, mSecondItemTop,
                             mDecoratedChildWidth,
                             mSecondItemTop + mFirstItemHeight);
+
                     vTop = getThirdItem(dy);
-                    /*Logger.print(adapterPostion +
+
+/*                   Logger.print(adapterPostion +
                             " Top: " + mSecondItemTop +
-                            " Next Top: " + vTop);*/
+                            " Next Top: " + vTop +
+                            " Height: " + mFirstItemHeight);*/
+
                     if (mDirection != DIRECTION_NONE)
                         setAnimations(v, mSecondItemTop);
+
+                    if (Recycler.getInstance().hasExpanded)
+                        vTop = mSecondItemTop + mDecoratedChildHeight;
 
                     break;
                 default:
@@ -365,7 +430,11 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                     layoutDecorated(v, 0, vTop,
                             mDecoratedChildWidth,
                             vTop + mFirstItemHeight);
-                    //Logger.print(adapterPostion + " Top: " + vTop + " Next Top: " + (vTop + mDecoratedChildHeight));
+
+                    Logger.print(adapterPostion + " Top: " + vTop +
+                            " Next Top: " + (vTop + mDecoratedChildHeight) +
+                            " Height: " + mFirstItemHeight);
+
                     vTop += mDecoratedChildHeight;
                     break;
             }
@@ -452,8 +521,8 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
         if (getChildCount() == 0)
             return 0;
 
-        if (mHeaderTop == 0 && dy < 0)
-            return 0;
+        /*if (mHeaderTop == 0 && dy < 0)
+            return 0;*/
 
         int delta;
         bottomBoundReached = false;
@@ -481,13 +550,13 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                 return 0;
             }
             //Logger.print("Scrolling Up");
-        } else {
+        } /*else {
             if (topBoundReached) {
                 Logger.print("TopBound Reached!");
                 return 0;
             }
             //Logger.print("Scrolling Down");
-        }
+        }*/
 
         delta = -dy;
         //the list scrolled with displacement of delta
@@ -537,18 +606,29 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     public void onScrollStateChanged(int state) {
         switch (state) {
             case RecyclerView.SCROLL_STATE_IDLE:
-                Logger.print("Scroll IDLE: " + " fTop: " + mFirstItemTop + " HeaderArea: " + HEADER_VISIBLE_AREA +
-                        " sTop: " + mSecondItemTop + " UP Range: " + UP_THRESHOLD + " DOWN Range: " + DOWN_THRESHOLD + " " + mDirection);
+                Logger.print("IDLE: " + " fTop: " + mFirstItemTop + " HeaderArea: " + HEADER_VISIBLE_AREA +
+                        " sTop: " + mSecondItemTop + " UP: " + UP_THRESHOLD + " DOWN: " + DOWN_THRESHOLD + " " + mDirection);
+
+                if (Recycler.getInstance().hasExpanded) {
+                    mCallback.setFlingAction(incrementedBy);
+
+                    justStarted = true;
+
+                    return;
+                }
 
                 switch (mDirection) {
                     case DIRECTION_UP:
 
                         if (!bottomBoundReached) {
                             if (mFirstItem == 1 && mFirstItemTop > HEADER_VISIBLE_AREA) {
-                                if (mFirstItemTop < UP_THRESHOLD)
+                                if (mFirstItemTop < UP_THRESHOLD && !justStarted) {
+                                    Logger.print("Up If: " + justStarted);
                                     mCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
-                                else
+                                }else {
+                                    Logger.print("Up else: " + justStarted);
                                     mCallback.setFlingAction(mHeaderTop);
+                                }
                             } else if (mFirstItem >= 1 && mFirstItemTop == HEADER_VISIBLE_AREA) {
                                 if (mSecondItemTop < UP_THRESHOLD)
                                     mCallback.setFlingAction(mSecondItemTop - mFirstItemTop);
@@ -567,19 +647,23 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
                                 mCallback.setFlingAction(mSecondItemTop - HEADER_VISIBLE_AREA);
                         } else if (mFirstItemTop != HEADER_VISIBLE_AREA) {
                             if (mFirstItemTop < DOWN_THRESHOLD) {
+                                Logger.print("Down Else IF  if: " + justStarted);
                                 mCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
                             } else {
                                 mCallback.setFlingAction(mFirstItemTop - mFirstItemHeight);
+                                Logger.print("Down Else IF  else: " + justStarted);
+                                if(justStarted)
+                                    justStarted = false;
                             }
                         }
                         break;
                 }
                 break;
             case RecyclerView.SCROLL_STATE_DRAGGING:
-                Logger.print("Scroll Dragging");
+//                Logger.print("Scroll Dragging");
                 break;
             case RecyclerView.SCROLL_STATE_SETTLING:
-                Logger.print("Scroll Settling: " + mFirstItemTop);
+//                Logger.print("Scroll Settling: " + mFirstItemTop);
                 break;
         }
     }
@@ -588,24 +672,27 @@ public class DeckHeaderLayoutManager extends RecyclerView.LayoutManager {
     public int getFlingDisplacement(float velocityY) {
 
         int displacement = 0;
-        if(velocityY <= /*-2300*/-100) {
-            if(mFirstItemTop > HEADER_VISIBLE_AREA){
-                displacement =  mFirstItemTop - HEADER_VISIBLE_AREA;
-            }else if(mSecondItemTop > HEADER_VISIBLE_AREA){
-                displacement =  mSecondItemTop - HEADER_VISIBLE_AREA;
+        if (velocityY <= -100) {
+            if (mFirstItemTop > HEADER_VISIBLE_AREA) {
+                displacement = mFirstItemTop - HEADER_VISIBLE_AREA;
+            } else if (mSecondItemTop > HEADER_VISIBLE_AREA) {
+                displacement = mSecondItemTop - HEADER_VISIBLE_AREA;
             }
-        }else if(velocityY > /*2500*/100){
+        } else if (velocityY > 100) {
             //displacement must be negative
-            Logger.print("Negative Velocity sTop: " + mSecondItemTop + " Displacement: " + displacement + " velocity: " + velocityY);
-             if(mSecondItemTop > HEADER_VISIBLE_AREA && mSecondItemTop < mFirstItemHeight + HEADER_VISIBLE_AREA){
+            //Logger.print("Negative Velocity sTop: " + mSecondItemTop + " Displacement: " + displacement + " velocity: " + velocityY);
+            if (mSecondItemTop > HEADER_VISIBLE_AREA && mSecondItemTop < mFirstItemHeight + HEADER_VISIBLE_AREA) {
                 displacement = mSecondItemTop - (mFirstItemHeight + HEADER_VISIBLE_AREA/* + mDecoratedChildHeight*/);
-                Logger.print("If sTop: " + mSecondItemTop + " Displacement: " + displacement);
-            }else if(mFirstItemTop < mFirstItemHeight){
-                 displacement = mFirstItemTop - mFirstItemHeight;
-                 Logger.print("else sTop: " + mSecondItemTop + " Displacement: " + displacement);
-             }
+                //Logger.print("If sTop: " + mSecondItemTop + " Displacement: " + displacement);
+            } else if (mFirstItemTop < mFirstItemHeight) {
+                displacement = mFirstItemTop - mFirstItemHeight;
+                //Logger.print("else sTop: " + mSecondItemTop + " Displacement: " + displacement);
+            }
         }
 
+        if (Recycler.getInstance().hasExpanded && mHeaderTop == 0 && Recycler.getInstance().imageDimension > 450) {
+            onScrollStateChanged(RecyclerView.SCROLL_STATE_IDLE);
+        }
         return displacement;
     }
 }

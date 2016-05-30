@@ -5,4 +5,5 @@ package com.mayo.recyclerview;
  */
 public interface Callback {
     void setFlingAction(int dy);
+    void notifyDataChange();
 }
