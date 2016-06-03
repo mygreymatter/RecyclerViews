@@ -108,7 +108,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
-        return 5 + 1;
+        return 20 + 1;
     }
 
     class ItemHolder extends RecyclerView.ViewHolder {
