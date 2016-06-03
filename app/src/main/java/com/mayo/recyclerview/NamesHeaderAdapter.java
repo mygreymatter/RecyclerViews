@@ -39,7 +39,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        Logger.print("-------------------Create View-----------------------------");
+//        Logger.print("-------------------Adapter Create View-----------------------------");
         RecyclerView.ViewHolder holder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
@@ -59,7 +59,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-        //Logger.print("Bind View: " + position);
+//        Logger.print("Adapter Bind View: " + position);
         switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
