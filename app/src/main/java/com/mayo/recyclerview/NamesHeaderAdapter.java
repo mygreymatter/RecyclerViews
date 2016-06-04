@@ -1,12 +1,12 @@
 package com.mayo.recyclerview;
 
+import android.os.CountDownTimer;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -19,9 +19,8 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private final static int HEADER = 0;
     private final static int ITEM = 1;
-    private int incrementedBy;
-    private boolean hasExpanded;
-    private int mImageInitialHeight;
+    private long[] timers = {40, 1800, 3600};
+    private int prevFirstItem = -1;
 
     public NamesHeaderAdapter() {
     }
@@ -36,10 +35,9 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        Logger.print("-------------------Adapter Create View-----------------------------");
+        //Logger.print("-------------------Adapter Create View-----------------------------");
         RecyclerView.ViewHolder holder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
@@ -63,7 +61,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
-                configureHeaderView(headerHolder);
+                configureHeaderView(headerHolder, position);
                 break;
             default:
                 ItemHolder itemHolder = (ItemHolder) holder;
@@ -92,7 +90,8 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    private void configureHeaderView(HeaderHolder holder) {
+    private void configureHeaderView(final HeaderHolder holder, int position) {
+        Logger.print("\n-------------------------------------");
         if (Recycler.getInstance().hasExpanded) {
             final ImageView iv = (ImageView) holder.innerLayout.findViewById(R.id.store_image);
 
@@ -103,7 +102,54 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             iv.setLayoutParams(params);
 
             holder.innerLayout.requestLayout();
+        } else if (Recycler.getInstance().hasHeaderSticky) {
+            Logger.print("Has sticky header");
+
+            if (prevFirstItem != Recycler.getInstance().firstItem) {
+                prevFirstItem = Recycler.getInstance().firstItem;
+                //multiply with thousand to convert into milliseconds
+                time = (prevFirstItem % 2 == 0 ? 1800 : 3600) * 1000;
+                Logger.print("Pos: " + prevFirstItem + " Time: " + time);
+              /*  holder.spotRewards.setText("Expires in: " + getFormattedTimeString(time / 1000));
+                setTime(time, holder.spotRewards);*/
+            }
+            holder.spotRewards.setText("Expires in: " + getFormattedTimeString(time / 1000));
+            setTime(time, holder.spotRewards);
+
+        } else {
+            Logger.print("No sticky header");
+            holder.spotRewards.setText("#SpotRewards");
         }
+
+        Logger.print("Spot Rewards: " + holder.spotRewards.getText().toString());
+    }
+
+    CountDownTimer downTimer;
+    boolean hasTimerStarted;
+    long time;
+
+    private void setTime(final long duration, final TextView v) {
+
+        if (hasTimerStarted) {
+            downTimer.cancel();
+        }
+
+        downTimer = new CountDownTimer(duration, 1000) {
+            @Override
+            public void onTick(long tick) {
+                time = tick;
+                //Logger.print("setTime Spot Rewards: " + v.getText().toString());
+                v.setText("Expires in: " + getFormattedTimeString(tick / 1000));
+            }
+
+            @Override
+            public void onFinish() {
+                v.setText("Expired");
+            }
+        };
+
+        downTimer.start();
+        hasTimerStarted = true;
     }
 
     @Override
@@ -120,7 +166,6 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextView pickReward;
         ImageView storeImage;
 
-
         public ItemHolder(View v) {
             super(v);
 
@@ -131,7 +176,6 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             pickReward = (TextView) innerLayout.findViewById(R.id.pick_reward);
 
             storeImage = (ImageView) innerLayout.findViewById(R.id.store_image);
-
         }
     }
 
@@ -145,7 +189,6 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         CircleImageView storeImage;
 
         RelativeLayout innerLayout;
-
 
         public HeaderHolder(View v) {
             super(v);
@@ -161,6 +204,51 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             storeImage = (CircleImageView) innerLayout.findViewById(R.id.store_image);
 
         }
+
     }
 
+    private String getFormattedTimeString(long timeInSeconds) {
+        String timeStr = new String();
+        long sec_term = 1;
+        long min_term = 60 * sec_term;
+        long hour_term = 60 * min_term;
+        long result = Math.abs(timeInSeconds);
+
+        int hour = (int) (result / hour_term);
+        result = result % hour_term;
+        int min = (int) (result / min_term);
+        result = result % min_term;
+        int sec = (int) (result / sec_term);
+
+        if (timeInSeconds < 0) {
+            timeStr = "-";
+        }
+        if (hour > 0) {
+            if (hour < 10)
+                timeStr += "0" + hour + ":";
+            else
+                timeStr += hour + ":";
+        } else if (hour == 0) {
+            timeStr += "00" + ":";
+        }
+
+        if (min > 0) {
+            if (min < 10)
+                timeStr += "0" + min + ":";
+            else
+                timeStr += min + ":";
+        } else if (min == 0) {
+            timeStr += "00" + ":";
+        }
+
+        if (sec > 0) {
+            if (sec < 10)
+                timeStr += "0" + sec;
+            else
+                timeStr += sec;
+        } else if (sec == 0) {
+            timeStr += "00";
+        }
+        return timeStr;
+    }
 }

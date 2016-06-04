@@ -1,6 +1,7 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,12 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.mayo.recyclerview.layouts.DeckHeaderLayoutManager;
+import com.mayo.recyclerview.layouts.Timer;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements Callback {
 
@@ -45,6 +52,38 @@ public class MainActivity extends AppCompatActivity implements Callback {
                 return false;
             }
         });
+
+     /*   new CountDownTimer(30000,1000){
+            @Override
+            public void onTick(long tick) {
+                Logger.print("Timer Tick: " + tick/1000);
+            }
+
+            @Override
+            public void onFinish() {
+                Logger.print("Timer onFinish");
+            }
+        }.start();
+*/
+
+        Timer timer = new Timer(this);
+        //timer.getExpiryTime();
+        Calendar c = Calendar.getInstance();
+
+        Date today = c.getTime();
+        Logger.print("Today: " + today);
+
+        c.add(Calendar.DATE, 1);
+
+        Date tomorrow = c.getTime();
+        Logger.print("Tomorrow: " + tomorrow);
+
+        Logger.print("Diff: " + getDateDiff(today,tomorrow,TimeUnit.MINUTES));
+    }
+
+    private static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -85,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements Callback {
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
 
-        Logger.print("Density: " + metrics.densityDpi + " " + metrics.density);
+//        Logger.print("Density: " + metrics.densityDpi + " " + metrics.density);
         return (int) metrics.density;
     }
 
@@ -107,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements Callback {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            Logger.print("onFling yVelocity: " + velocityY + " " + (e2.getY() - e1.getY()));
+//            Logger.print("onFling yVelocity: " + velocityY + " " + (e2.getY() - e1.getY()));
             setFlingAction(manager.getFlingDisplacement(velocityY));
             return true;
             //return true;

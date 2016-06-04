@@ -14,6 +14,8 @@ public class Recycler extends Application {
     public Map<Integer,Integer> viewHeights = new HashMap<>();
     public boolean hasExpanded;
     public int imageDimension;
+    public boolean hasHeaderSticky;
+    public int firstItem;
 
     @Override
     public void onCreate() {
