@@ -15,7 +15,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 /**
  * Created by mayo on 17/5/16.
  */
-public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class StickyHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final static int HEADER = 0;
     private final static int ITEM = 1;
@@ -24,7 +24,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     long time;
     private int prevFirstItem = -1;
 
-    public NamesHeaderAdapter() {
+    public StickyHeaderAdapter() {
     }
 
     @Override
@@ -43,7 +43,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         RecyclerView.ViewHolder holder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
-        switch (viewType) {
+        /*switch (viewType) {
             case HEADER:
                 View headerView = inflater.inflate(R.layout.r_lengthy_header, parent, false);
                 holder = new HeaderHolder(headerView);
@@ -53,14 +53,16 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 View itemView = inflater.inflate(R.layout.r, parent, false);
                 holder = new ItemHolder(itemView);
                 break;
-        }
+        }*/
+        View itemView = inflater.inflate(R.layout.r_sticky_header, parent, false);
+        holder = new ItemHolder2(itemView);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
         LogBuilder.build("Adapter Bind View: " + position);
-        switch (holder.getItemViewType()) {
+        /*switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
                 configureHeaderView(headerHolder, position);
@@ -69,7 +71,10 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 ItemHolder itemHolder = (ItemHolder) holder;
                 configureItemView(itemHolder, position);
                 break;
-        }
+        }*/
+        ItemHolder2 itemHolder = (ItemHolder2) holder;
+        ((ItemHolder2) holder).name.setText((position + 1));
+
     }
 
     private void configureItemView(ItemHolder holder, int position) {
@@ -105,7 +110,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             holder.innerLayout.requestLayout();
         } else if (Gazapp.getGazapp().hasHeaderSticky) {
-            LogBuilder.build("Has sticky r_lengthy_header");
+//            LogBuilder.build("Has sticky r_lengthy_header");
 
             if (prevFirstItem != Gazapp.getGazapp().firstItem) {
                 prevFirstItem = Gazapp.getGazapp().firstItem;
@@ -119,9 +124,8 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             setTime(time, holder.spotRewards);
 
         } else {
-            LogBuilder.build("No sticky r_lengthy_header");
+//            LogBuilder.build("No sticky r_lengthy_header");
             holder.spotRewards.setText("#SpotRewards");
-            holder.spotRewards.setGravity(Gravity.CENTER);
         }
 //        LogBuilder.build("Spot Rewards: " + holder.spotRewards.getText().toString());
     }
@@ -219,6 +223,18 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             pickReward = (TextView) innerLayout.findViewById(R.id.pick_reward);
 
             storeImage = (ImageView) innerLayout.findViewById(R.id.store_image);
+        }
+    }
+
+    class ItemHolder2 extends RecyclerView.ViewHolder {
+
+
+        TextView name;
+
+        public ItemHolder2(View v) {
+            super(v);
+
+            name = (TextView) v.findViewById(R.id.name);
         }
     }
 

@@ -5,14 +5,15 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mayo.recyclerview.DeckHeaderCallback;
-import com.mayo.recyclerview.Gazapp;
 import com.mayo.recyclerview.LogBuilder;
 import com.mayo.recyclerview.R;
 
@@ -54,6 +55,8 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     private int incrementedBy = 0;
     private boolean justStarted;
     private boolean hasChanged;
+    private int mPrevFirstItem;
+    private boolean isCalledOnce;
 
     public StickyHeaderLayoutManager(Context context, int density) {
         mContext = context;
@@ -96,10 +99,11 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             r = (RelativeLayout) scrap.findViewById(R.id.inner_layout);
             LinearLayout l = (LinearLayout) r.findViewById(R.id.store_details_layout);
             TextView t = (TextView) l.findViewById(R.id.spot_rewards);
-            t.measure(0, 0);
+            t.setGravity(Gravity.CENTER);
+//            t.measure(0, 0);
 
-            LogBuilder.build("Height: " + t.getMeasuredHeight());
-            HEADER_VISIBLE_AREA = t.getMeasuredHeight();
+//            LogBuilder.build("Height: " + t.getMeasuredHeight());
+            HEADER_VISIBLE_AREA = /*t.getMeasuredHeight()*/121;
 
             detachAndScrapView(scrap, recycler);
 
@@ -112,7 +116,6 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             //assume that the size of each child view is same
             //calculate the decorated values upfront
             mFirstItemHeight = getDecoratedMeasuredHeight(scrap);
-
 //            mFirstItemHeight = mHeaderHeight - HEADER_VISIBLE_AREA + 10;
             LogBuilder.build("Item Height: " + mFirstItemHeight);
 
@@ -133,6 +136,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
         mSecondItemTop = mFirstItemHeight;
 
         mFirstItem = 1;
+        mPrevFirstItem = 1;
         //initialize the tops
         mHeaderTop = 0;
         mFirstItemTop = mHeaderHeight;
@@ -158,10 +162,10 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
         updateMagnetVisibleRowCount();
         detachAndScrapAttachedViews(recycler);
 
-        layoutViews(DIRECTION_NONE, 0, recycler, state);
+        layoutViews(0, recycler);
 
         /*if (isCalledOnce) {
-            scrollVerticallyBy(1100, recycler, state);
+            scrollVerticallyBy(500, recycler, state);
         }
         isCalledOnce = true;*/
     }
@@ -176,7 +180,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             mVisibleRowCount++;
         }
 //        }
-//        LogBuilder.build("Rows: " + mVisibleRowCount + " sTop: " + mSecondItemTop + " " + (HEADER_VISIBLE_AREA + mFirstItemHeight) + " " + vTop + " " + mRecyclerViewHeight);
+//        LogBuilder.build("Rows: " + mVisibleRowCount);
     }
 
     private void updateHeaderTop(int scrolledBy) {
@@ -210,6 +214,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
             if (mFirstItem > 1 && mSecondItemTop >= HEADER_VISIBLE_AREA + mFirstItemHeight) {
 //                LogBuilder.build("------------------Down Transition------------------------");
+                mPrevFirstItem = mFirstItem;
                 mFirstItem--;
                 hasTransition = true;
             }
@@ -282,6 +287,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 //            LogBuilder.build("Second Up------------------");
             if (mFirstItemTop == HEADER_VISIBLE_AREA) {//when the r_lengthy_header becomes sticky
                 if ((mSecondItemTop - scrolledBy) <= HEADER_VISIBLE_AREA) {
+                    mPrevFirstItem = mFirstItem;
                     mFirstItem++;
                     mFirstItemTop = mSecondItemTop;
                     mSecondItemTop = mFirstItemTop + mFirstItemHeight;
@@ -308,17 +314,17 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
         } else if (scrolledBy < 0) {
 //            LogBuilder.build("Second Down-------------------------------");
-            LogBuilder.build("Before Else Second Item Top: " + mSecondItemTop + " FirstTop: " + mFirstItemTop);
+//            LogBuilder.build("Before Else Second Item Top: " + mSecondItemTop + " FirstTop: " + mFirstItemTop);
             if (hasTransition) {
                 vTop = mSecondItemTop;
                 mSecondItemTop = mFirstItemTop - scrolledBy;
-                LogBuilder.build(" Transition: " + mSecondItemTop);
+//                LogBuilder.build(" Transition: " + mSecondItemTop);
             } else {
                 if (mFirstItem == 1) {
                     mSecondItemTop -= scrolledBy;
 
-                    LogBuilder.build("FirstItemTop: " + mFirstItemTop + " " + mSecondItemTop +
-                            " " + (mSecondItemTop - mFirstItemTop) + " " + mDecoratedChildHeight);
+//                    LogBuilder.build("FirstItemTop: " + mFirstItemTop + " " + mSecondItemTop +
+//                            " " + (mSecondItemTop - mFirstItemTop) + " " + mDecoratedChildHeight);
 
                     if (mFirstItemTop == HEADER_VISIBLE_AREA) {
                         if (mSecondItemTop >= (HEADER_VISIBLE_AREA + mFirstItemHeight)) {
@@ -328,13 +334,13 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
                         if ((mSecondItemTop - mFirstItemTop) <= mDecoratedChildHeight) {
                             mSecondItemTop = mFirstItemTop + mDecoratedChildHeight;
-                            LogBuilder.build("If : " + mSecondItemTop);
+//                            LogBuilder.build("If : " + mSecondItemTop);
                         } else {
                             mSecondItemTop = HEADER_VISIBLE_AREA + mFirstItemHeight;
                             if ((mSecondItemTop - mFirstItemTop) < mDecoratedChildHeight) {
                                 mSecondItemTop = mFirstItemTop + mDecoratedChildHeight;
                             }
-                            LogBuilder.build("Else : " + mSecondItemTop);
+//                            LogBuilder.build("Else : " + mSecondItemTop);
                         }
                         /*if ((mSecondItemTop - mFirstItemTop) > mDecoratedChildHeight) {
                             mSecondItemTop = HEADER_VISIBLE_AREA + mFirstItemHeight;
@@ -346,7 +352,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                     }
                 } else {
                     mSecondItemTop -= scrolledBy;
-                    LogBuilder.build("else if else SecondTop: " + mSecondItemTop);
+//                    LogBuilder.build("else if else SecondTop: " + mSecondItemTop);
                     if (mSecondItemTop > (HEADER_VISIBLE_AREA + mFirstItemHeight)) {
                         mSecondItemTop = HEADER_VISIBLE_AREA + mFirstItemHeight;
 //                        LogBuilder.build("else if else if SecondTop: " + mSecondItemTop);
@@ -355,7 +361,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        LogBuilder.build("UpdateSecondTop - sTop: " + mSecondItemTop + " FirstTop " + mFirstItemTop);
+//        LogBuilder.build("UpdateSecondTop - sTop: " + mSecondItemTop + " FirstTop " + mFirstItemTop);
     }
 
     private int getThirdItem(int scrolledBy) {
@@ -401,42 +407,103 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private void layoutViews(int direction, int dy, RecyclerView.
-            Recycler recycler, RecyclerView.State state) {
+    private void layoutViews(int dy, RecyclerView.
+            Recycler recycler) {
 
-        //LogBuilder.build("\n------------------------------------------------------------");
+//        LogBuilder.build("\n------------------------------------------------------------");
+        SparseArray<View> viewCache = new SparseArray<>(getChildCount());
 
         if (getChildCount() > 0) {
-            removeAllViews();
+
+//            LogBuilder.build("Prev FirstItem: " + mPrevFirstItem + " Children: " + getItemCount() + " Adapter Children: " + getChildCount());
+            //cache all views by their exisiting position, before updating counts
+            for (int i = 0; i < getChildCount(); i++) {
+
+                if (i == 0) {
+//                    LogBuilder.build("Adapter Position: " + 0);
+                    viewCache.put(0, getChildAt(0));
+                } else {
+//                    LogBuilder.build("Adapter Position: " + getAdapterPosition(i, mPrevFirstItem));
+                    viewCache.put(getAdapterPosition(i, mPrevFirstItem), getChildAt(i));
+                }
+
+            }
+
+//            LogBuilder.build("Cached Views Count: " + viewCache.size());
+            //detach all views
+            for (int i = 0; i <= viewCache.size(); i++) {
+
+                if (i == 0) {
+//                    LogBuilder.build("Detaching Position: " + 0);
+                    detachView(viewCache.get(0));
+                } else {
+//                    LogBuilder.build("Detaching Position: " + getAdapterPosition(i, mPrevFirstItem));
+                    detachView(viewCache.get(getAdapterPosition(i, mPrevFirstItem)));
+                }
+
+            }
+
+            //removeAllViews();
+            mPrevFirstItem = mFirstItem;
         }
 
         int adapterPostion;
         int vTop = 0;
+        boolean created;
+
 
 
         for (int i = 0; i < mVisibleRowCount; i++) {
+
+            //set header
+            if (i == 0) {
+                v = viewCache.get(0);
+                if (v == null) {
+                    v = recycler.getViewForPosition(0);
+                    addView(v);
+//                    LogBuilder.build("Created New View: " + 0);
+                } else {
+//                    LogBuilder.build("Removing ViewCache: " + 0);
+                    attachView(v);
+                    viewCache.remove(0);
+                }
+
+                layoutDecorated(v, 0, mHeaderTop,
+                        mDecoratedChildWidth,
+                        mHeaderHeight + incrementedBy);
+//                LogBuilder.build(i + " Height: " + " Top: " + mHeaderTop + " mFirstTop: " + mFirstItemTop);
+
+                continue;
+            }
+
             adapterPostion = getAdapterPosition(i, mFirstItem);
-            //LogBuilder.build("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
+//            LogBuilder.build("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
+
+            created = false;
 
             if (adapterPostion == -1 || adapterPostion >= getItemCount())
                 continue;
-            else if (i == 0) {
-                v = recycler.getViewForPosition(0);
-            } else {
-                v = recycler.getViewForPosition(adapterPostion);
+            else {
+                v = viewCache.get(adapterPostion);
+
+                if (v == null) {
+                    v = recycler.getViewForPosition(adapterPostion);
+                    created = true;
+//                    LogBuilder.build("Created New View: " + adapterPostion);
+                }
             }
 
             measureChildWithMargins(v, 0, 0);
 
             switch (i) {
-                case 0:
+            /*    case 0:
                     layoutDecorated(v, 0, mHeaderTop,
                             mDecoratedChildWidth,
                             mHeaderHeight + incrementedBy);
 
-                    LogBuilder.build(i + " Height: " + (mFirstItemHeight + incrementedBy) + " " + incrementedBy);
+                    LogBuilder.build(i + " Height: " + (mHeaderHeight + incrementedBy) + " Top: " + mHeaderTop + " mFirstTop: " + mFirstItemTop);
 
-                    break;
+                    break;*/
                 case 1:
                     /*if (Gazapp.getGazapp().hasExpanded) {
                         mFirstItemTop = mHeaderHeight + incrementedBy;
@@ -446,11 +513,11 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             mFirstItemTop + mFirstItemHeight);
 
-                    LogBuilder.build(adapterPostion + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight +
-                            " JustStarted: " + justStarted + " " + incrementedBy);
+//                    LogBuilder.build(adapterPostion + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight +
+//                            " JustStarted: " + justStarted + " " + incrementedBy);
 
-                    if (mDirection != DIRECTION_NONE)
-                        setAnimations(v, mFirstItemTop);
+                    /*if (mDirection != DIRECTION_NONE)
+                        setAnimations(v, mFirstItemTop);*/
 
                     break;
                 case 2:
@@ -469,13 +536,13 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
                     vTop = getThirdItem(dy);
 
-                    LogBuilder.build(adapterPostion +
-                            " Top: " + mSecondItemTop +
-                            " Next vTop: " + vTop +
-                            " Height: " + mFirstItemHeight);
+//                    LogBuilder.build(adapterPostion +
+//                            " Top: " + mSecondItemTop +
+//                            " Next vTop: " + vTop +
+//                            " Height: " + mFirstItemHeight);
 
-                    if (mDirection != DIRECTION_NONE)
-                        setAnimations(v, mSecondItemTop);
+                    /*if (mDirection != DIRECTION_NONE)
+                        setAnimations(v, mSecondItemTop);*/
 
                     /*if (Gazapp.getGazapp().hasExpanded)
                         vTop = mSecondItemTop + mDecoratedChildHeight;*/
@@ -487,20 +554,32 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             vTop + mFirstItemHeight);
 
-                    LogBuilder.build(adapterPostion + " Top: " + vTop +
-                            " Next Top: " + (vTop + mDecoratedChildHeight) +
-                            " Height: " + mFirstItemHeight);
+//                    LogBuilder.build(adapterPostion + " Top: " + vTop +
+//                            " Next Top: " + (vTop + mDecoratedChildHeight) +
+//                            " Height: " + mFirstItemHeight);
 
                     vTop += mDecoratedChildHeight;
                     break;
             }
 
-            addView(v);
+            if (created) {
+                addView(v);
+            } else {
+//                LogBuilder.build("Removing ViewCache: " + adapterPostion + " index: " + i);
+                attachView(v);
+                viewCache.remove(adapterPostion);
+            }
 
             //no need to display children whose top is beyond the recyclerView's viewport
             if (vTop > mRecyclerViewHeight) {
                 break;
             }
+        }
+
+//        LogBuilder.build("Remaining views: " + viewCache.size());
+        for (int i = 0; i < viewCache.size(); i++) {
+            final View removingView = viewCache.valueAt(i);
+            recycler.recycleView(removingView);
         }
     }
 
@@ -568,14 +647,14 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.
             State state) {
 
-        LogBuilder.build("---------------------------------------------------");
-        LogBuilder.build("Scrolled By: " + dy + " " + mHeaderTop);
+//        LogBuilder.build("---------------------------------------------------");
+//        LogBuilder.build("Scrolled By: " + dy + " " + mHeaderTop);
 
         if (getChildCount() == 0)
             return 0;
 
-        /*if (Gazapp.getGazapp().currentState == State.ZAPP_IN)
-        return 0;*/
+/*        if (Gazapp.getGazapp().currentState == State.ZAPP_IN)
+            return 0;*/
 
         /*if(!Gazapp.getGazapp().hasExpanded && dy > 0 && getItemCount() == 2){
             return 0;
@@ -633,11 +712,11 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
         if (dy > 0) {
             mDirection = DIRECTION_UP;
             //LogBuilder.build("Direction UP: " + dy);
-            layoutViews(DIRECTION_UP, dy, recycler, state);
+            layoutViews(dy, recycler);
         } else {
             mDirection = DIRECTION_DOWN;
             //LogBuilder.build("Direction DOWN: " + dy);
-            layoutViews(DIRECTION_DOWN, dy, recycler, state);
+            layoutViews(dy, recycler);
         }
 
         return -delta;
@@ -678,7 +757,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                     return;
                 }*/
 
-                switch (mDirection) {
+                /*switch (mDirection) {
                     case DIRECTION_UP:
 
                         if (!bottomBoundReached) {
@@ -721,7 +800,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                             }
                         }
                         break;
-                }
+                }*/
 
                 break;
             case RecyclerView.SCROLL_STATE_DRAGGING:

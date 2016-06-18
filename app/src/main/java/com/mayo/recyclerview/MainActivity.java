@@ -8,10 +8,8 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.WindowManager;
 
-import com.mayo.recyclerview.layouts.DeckHeaderLayoutManager;
 import com.mayo.recyclerview.layouts.StickyHeaderLayoutManager;
 
 public class MainActivity extends AppCompatActivity implements DeckHeaderCallback {
@@ -27,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDetector = new GestureDetectorCompat(this, new MyGesture());
+
         mRecycler = (RecyclerView) findViewById(R.id.names_list);
 
         mLengthyAdapter = new NamesHeaderAdapter();
@@ -38,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         mRecycler.setHasFixedSize(true);
 
 
+        /*
+        mDetector = new GestureDetectorCompat(this, new MyGesture());
         mRecycler.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
                     return true;
                 return false;
             }
-        });
+        });*/
     }
 
     @Override
@@ -65,6 +65,11 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         //LogBuilder.build("distanceY: " + dy);
         mRecycler.smoothScrollBy(0, dy);
     }
+
+    /*public void scrollUp(View v){
+        mRecycler.smoothScrollBy(0, 100);
+    }*/
+
 
     @Override
     public void setStickyHeader(boolean sticked, int firstItem) {
