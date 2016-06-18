@@ -3,7 +3,7 @@ package com.mayo.recyclerview;
 /**
  * Created by mayo on 20/5/16.
  */
-public interface Callback {
+public interface DeckHeaderCallback {
     void setFlingAction(int dy);
-    void notifyDataChange();
+    void setStickyHeader(boolean sticked,int firstItem);
 }

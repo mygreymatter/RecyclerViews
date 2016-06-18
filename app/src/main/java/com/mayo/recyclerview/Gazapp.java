@@ -8,14 +8,15 @@ import java.util.Map;
 /**
  * Created by mayo on 20/5/16.
  */
-public class Recycler extends Application {
+public class Gazapp extends Application {
 
-    private static Recycler mInstance = null;
+    private static Gazapp mInstance = null;
     public Map<Integer,Integer> viewHeights = new HashMap<>();
     public boolean hasExpanded;
     public int imageDimension;
     public boolean hasHeaderSticky;
     public int firstItem;
+
 
     @Override
     public void onCreate() {
@@ -24,7 +25,7 @@ public class Recycler extends Application {
         mInstance = this;
     }
 
-    public static Recycler getInstance(){
+    public static Gazapp getGazapp(){
         return mInstance;
     }
 }

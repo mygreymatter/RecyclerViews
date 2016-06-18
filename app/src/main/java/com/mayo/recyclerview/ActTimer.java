@@ -7,8 +7,6 @@ import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class ActTimer extends AppCompatActivity {
 
@@ -24,14 +22,14 @@ public class ActTimer extends AppCompatActivity {
         mTimer = (TextView) findViewById(R.id.timer);
 
         Calendar c = Calendar.getInstance();
-//        Logger.print("Today: " + c.getTime().toString());
+//        LogBuilder.build("Today: " + c.getTime().toString());
 
         c.add(Calendar.DATE,1);
         tomorrow = c.getTime();
-//        Logger.print("Tomorrow: " +c.getTime().toString());
+//        LogBuilder.build("Tomorrow: " +c.getTime().toString());
 
         long difference = getDiff(getCurrentTime(),tomorrow) * 2;
-        Logger.print("Difference: " + difference);
+        LogBuilder.build("Difference: " + difference);
         mTimer.setText(getFormattedTimeString(difference));
 
         new CountDownTimer(difference, 1000) {

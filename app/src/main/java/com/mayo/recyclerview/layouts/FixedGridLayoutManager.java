@@ -11,7 +11,7 @@ import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.mayo.recyclerview.Logger;
+import com.mayo.recyclerview.LogBuilder;
 
 import java.util.HashSet;
 import java.util.List;
@@ -391,7 +391,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
          * Next, we supply the grid of items that are deemed visible.
          * If these items were previously there, they will simply be
          * re-attached. New views that must be created are obtained
-         * from the Recycler and added.
+         * from the Gazapp and added.
          */
         int leftOffset = startLeftOffset;
         int topOffset = startTopOffset;
@@ -431,7 +431,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
             View view = viewCache.get(nextPosition);
             if (view == null) {
                 /*
-                 * The Recycler will give us either a newly constructed view,
+                 * The Gazapp will give us either a newly constructed view,
                  * or a recycled view it has on-hand. In either case, the
                  * view will already be fully bound to the data by the
                  * adapter for us.
@@ -451,7 +451,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
 
                 /*
                  * It is prudent to measure/layout each new view we
-                 * receive from the Recycler. We don't have to do
+                 * receive from the Gazapp. We don't have to do
                  * this for views we are just re-arranging.
                  */
                 measureChildWithMargins(view, 0, 0);
@@ -479,7 +479,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
         }
 
         /*
-         * Finally, we ask the Recycler to scrap and store any views
+         * Finally, we ask the Gazapp to scrap and store any views
          * that we did not re-attach. These are views that are not currently
          * necessary because they are no longer visible.
          */
@@ -542,7 +542,7 @@ public class FixedGridLayoutManager extends RecyclerView.LayoutManager {
                 final int columnOffset = getGlobalColumnOfPosition(targetPosition)
                         - getGlobalColumnOfPosition(mFirstVisiblePosition);
 
-                Logger.print("computerScroll");
+                LogBuilder.build("computerScroll");
                 return new PointF(columnOffset * mDecoratedChildWidth, rowOffset * mDecoratedChildHeight);
             }
         };

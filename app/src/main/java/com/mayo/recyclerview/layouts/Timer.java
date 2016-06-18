@@ -3,12 +3,7 @@ package com.mayo.recyclerview.layouts;
 import android.content.Context;
 import android.os.CountDownTimer;
 
-import com.mayo.recyclerview.Logger;
 import com.mayo.recyclerview.TimeZoneHandler;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Created by mayo on 3/6/16.
@@ -89,7 +84,7 @@ public class Timer{
     public long getExpiryTime() {
 
         /*String expiryTimeStamp = TimeZoneHandler.changeUTCToLOCAL(GazappSession
-                .getInstance().expiryTime);*/
+                .getGazapp().expiryTime);*/
 
 
         String expiryTimeStamp = null;

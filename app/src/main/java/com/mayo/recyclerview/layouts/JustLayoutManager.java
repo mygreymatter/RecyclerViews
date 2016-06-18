@@ -1,13 +1,11 @@
 package com.mayo.recyclerview.layouts;
 
-import android.graphics.PointF;
-import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 
-import com.mayo.recyclerview.Logger;
+import com.mayo.recyclerview.LogBuilder;
 
 /**
  * Created by mayo on 18/5/16.
@@ -94,19 +92,19 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
                 visiblePartOfFirstItem = mDecoratedChildHeight + mFirstItemTop;
 
             int visibleAreaOfList = visiblePartOfFirstItem + (mVisibleRowCount - 1) * mDecoratedChildHeight;
-            /*Logger.print("Rows: " + mVisibleRowCount +
+            /*LogBuilder.build("Rows: " + mVisibleRowCount +
                     " H: " + getVerticalSpace() +
                     " Height: " + visibleAreaOfList);*/
 
             if(getVerticalSpace() -  visibleAreaOfList > 0)
                 mVisibleRowCount++;
-            //Logger.print("Visible Rows: " + mVisibleRowCount);
+            //LogBuilder.build("Visible Rows: " + mVisibleRowCount);
         }
 
         if (mVisibleRowCount > getItemCount())
             mVisibleRowCount = getItemCount();
 
-        //Logger.print("UpdateVisibleRowCount - FirstItem: " + mFirstItem + " RowCount: " + mVisibleRowCount);
+        //LogBuilder.build("UpdateVisibleRowCount - FirstItem: " + mFirstItem + " RowCount: " + mVisibleRowCount);
     }
 
     private void layoutViews(int direction, RecyclerView.Recycler recycler, RecyclerView.State state) {
@@ -137,7 +135,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
 
         for (int i = 0; i < mVisibleRowCount; i++) {
             adapterPostion = getAdapterPosition(i,mFirstItem);
-            //Logger.print("Adapter Position: " + adapterPostion + " " + i);
+            //LogBuilder.build("Adapter Position: " + adapterPostion + " " + i);
 
             v = viewCache.get(adapterPostion);
 
@@ -152,14 +150,14 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
                 attachView(v);
                 viewCache.remove(adapterPostion);
             }
-            /*Logger.print("Adapter Pos: "+ adapterPostion +
+            /*LogBuilder.build("Adapter Pos: "+ adapterPostion +
                     " Top: " + vTop +
                     " Bottom: " + (vTop + mDecoratedChildHeight));*/
             vTop += mDecoratedChildHeight;
         }
 
         /*
-         * Finally, we ask the Recycler to scrap and store any views
+         * Finally, we ask the Gazapp to scrap and store any views
          * that we did not re-attach. These are views that are not currently
          * necessary because they are no longer visible.
          */
@@ -180,7 +178,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
         if (scrolledBy > 0) {//scrolled up
             v = getChildAt(0);
             int topOfV = getDecoratedTop(v);
-            //Logger.print("ScrolledBy: " + scrolledBy + " Top: " + topOfV);
+            //LogBuilder.build("ScrolledBy: " + scrolledBy + " Top: " + topOfV);
             topOfV = topOfV < 0 ? -topOfV : topOfV;//changes the sign for convenience
 
             if (topOfV < mDecoratedChildHeight) {
@@ -188,7 +186,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
                 mPrevFirstItem = mFirstItem;
                 //set the top of the mFirstItem
                 mFirstItemTop = -topOfV;
-                //Logger.print("FirstItem: " + mFirstItem + " First Top: " + mFirstItemTop + " Rows:" + mVisibleRowCount);
+                //LogBuilder.build("FirstItem: " + mFirstItem + " First Top: " + mFirstItemTop + " Rows:" + mVisibleRowCount);
                 return;
             } else {
                 mPrevFirstItem = mFirstItem;
@@ -218,7 +216,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
 
             }
 
-            //Logger.print("First: " + mFirstItem + " Top: " + mFirstItemTop);
+            //LogBuilder.build("First: " + mFirstItem + " Top: " + mFirstItemTop);
 
         } else {//scrolled down
             v = getChildAt(0);
@@ -260,7 +258,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        //Logger.print("ScrollVerticallyBy");
+        //LogBuilder.build("ScrollVerticallyBy");
 
         if (getChildCount() == 0)
             return 0;
@@ -270,7 +268,7 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
         int viewSpan = getDecoratedBottom(bottomView) - getDecoratedTop(topView);
 
         if (viewSpan < getVerticalSpace()) {
-            Logger.print("Cannot scroll");
+            LogBuilder.build("Cannot scroll");
             return 0;
         }
 
@@ -293,13 +291,13 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
         }else if(mFirstItem == 0){
             v = getChildAt(0);
             int top = getDecoratedTop(v);
-            //Logger.print("Top: " + top +" dy: " + dy);
+            //LogBuilder.build("Top: " + top +" dy: " + dy);
 
             if(-dy+top > 0){
                 dy = top;
             }
 
-            //Logger.print("Changed dy: " + dy);
+            //LogBuilder.build("Changed dy: " + dy);
             if(top > 0){
                 topBoundReached = true;
             }
@@ -307,16 +305,16 @@ public class JustLayoutManager extends RecyclerView.LayoutManager {
 
         if (dy > 0) {
             if (bottomBoundReached) {
-                //Logger.print("BottomBound Reached!");
+                //LogBuilder.build("BottomBound Reached!");
                 return 0;
             }
-            //Logger.print("Scrolling Up");
+            //LogBuilder.build("Scrolling Up");
         } else {
             if (topBoundReached) {
-                //Logger.print("TopBound Reached!");
+                //LogBuilder.build("TopBound Reached!");
                 return 0;
             }
-            //Logger.print("Scrolling Down");
+            //LogBuilder.build("Scrolling Down");
         }
 
         delta = -dy;

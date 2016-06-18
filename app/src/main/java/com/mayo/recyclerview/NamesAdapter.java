@@ -19,23 +19,23 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     private Map<Integer,Integer> mHeights;
 
     public NamesAdapter(){
-        mHeights = Recycler.getInstance().viewHeights;
+        mHeights = Gazapp.getGazapp().viewHeights;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        //Logger.print("Create View");
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.row_2, parent, false));
+        //LogBuilder.build("Create View");
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.r, parent, false));
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        //Logger.print("Bind View: " + position);
+        //LogBuilder.build("Bind View: " + position);
 
-        //Logger.print("\n---------------------------------------------------------");
+        //LogBuilder.build("\n---------------------------------------------------------");
         /*if(mHeights.size() > 0 && mHeights.get(position) != null){
             holder.innerLayout.getLayoutParams().height = mHeights.get(position);
-            //Logger.print("Position: " + position + " Height: " + mHeights.get(position));
+            //LogBuilder.build("Position: " + position + " Height: " + mHeights.get(position));
         }*/
 
         if(position == 6) {

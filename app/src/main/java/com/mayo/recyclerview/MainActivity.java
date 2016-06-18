@@ -1,8 +1,6 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -14,18 +12,13 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.mayo.recyclerview.layouts.DeckHeaderLayoutManager;
-import com.mayo.recyclerview.layouts.Timer;
+import com.mayo.recyclerview.layouts.StickyHeaderLayoutManager;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-
-public class MainActivity extends AppCompatActivity implements Callback {
+public class MainActivity extends AppCompatActivity implements DeckHeaderCallback {
 
     private RecyclerView mRecycler;
-    private NamesHeaderAdapter adapter;
-    private DeckHeaderLayoutManager manager;
+    private NamesHeaderAdapter mLengthyAdapter;
+    private StickyHeaderLayoutManager mLengthyManager;
     private GestureDetectorCompat mDetector;
 
 
@@ -35,15 +28,16 @@ public class MainActivity extends AppCompatActivity implements Callback {
         setContentView(R.layout.activity_main);
 
         mDetector = new GestureDetectorCompat(this, new MyGesture());
-
-        adapter = new NamesHeaderAdapter();
-        manager = new DeckHeaderLayoutManager(this, getScreenDensity());
-
         mRecycler = (RecyclerView) findViewById(R.id.names_list);
-        mRecycler.setLayoutManager(manager);
+
+        mLengthyAdapter = new NamesHeaderAdapter();
+        mLengthyManager = new StickyHeaderLayoutManager(this, getScreenDensity());
+        mRecycler.setLayoutManager(mLengthyManager);
+        mRecycler.setAdapter(mLengthyAdapter);
+
         mRecycler.setHasFixedSize(true);
 
-        mRecycler.setAdapter(adapter);
+
         mRecycler.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -52,50 +46,12 @@ public class MainActivity extends AppCompatActivity implements Callback {
                 return false;
             }
         });
-
-     /*   new CountDownTimer(30000,1000){
-            @Override
-            public void onTick(long tick) {
-                Logger.print("Timer Tick: " + tick/1000);
-            }
-
-            @Override
-            public void onFinish() {
-                Logger.print("Timer onFinish");
-            }
-        }.start();
-*/
-
-        Timer timer = new Timer(this);
-        //timer.getExpiryTime();
-        Calendar c = Calendar.getInstance();
-
-        Date today = c.getTime();
-        Logger.print("Today: " + today);
-
-        c.add(Calendar.DATE, 1);
-
-        Date tomorrow = c.getTime();
-        Logger.print("Tomorrow: " + tomorrow);
-
-        Logger.print("Diff: " + getDateDiff(today,tomorrow,TimeUnit.MINUTES));
-    }
-
-    private static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
-        long diffInMillies = date2.getTime() - date1.getTime();
-        return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //setFlingAction(-50);
-            }
-        }, 1000);
     }
 
     @Override
@@ -106,17 +62,14 @@ public class MainActivity extends AppCompatActivity implements Callback {
 
     @Override
     public void setFlingAction(final int dy) {
-        //Logger.print("distanceY: " + dy);
+        //LogBuilder.build("distanceY: " + dy);
         mRecycler.smoothScrollBy(0, dy);
     }
 
     @Override
-    public void notifyDataChange() {
-        //if (!mRecycler.isComputingLayout())
-        Logger.print("notifyDataChange");
-        adapter.notifyDataSetChanged();
-    }
+    public void setStickyHeader(boolean sticked, int firstItem) {
 
+    }
 
     private int getScreenDensity() {
         WindowManager windowManager = getWindowManager();
@@ -124,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements Callback {
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
 
-//        Logger.print("Density: " + metrics.densityDpi + " " + metrics.density);
+//        LogBuilder.build("Density: " + metrics.densityDpi + " " + metrics.density);
         return (int) metrics.density;
     }
 
@@ -132,13 +85,13 @@ public class MainActivity extends AppCompatActivity implements Callback {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            //Logger.print("onDown");
+            //LogBuilder.build("onDown");
             return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            //Logger.print("onScroll: " + distanceY);
+            //LogBuilder.build("onScroll: " + distanceY);
             return super.onScroll(e1, e2, distanceX, distanceY);
             //true means the onScroll is handled
             //return true;
@@ -146,10 +99,9 @@ public class MainActivity extends AppCompatActivity implements Callback {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-//            Logger.print("onFling yVelocity: " + velocityY + " " + (e2.getY() - e1.getY()));
-            setFlingAction(manager.getFlingDisplacement(velocityY));
+//            LogBuilder.build("onFling yVelocity: " + velocityY + " " + (e2.getY() - e1.getY()));
+            setFlingAction(mLengthyManager.getFlingDisplacement(velocityY));
             return true;
-            //return true;
         }
 
 

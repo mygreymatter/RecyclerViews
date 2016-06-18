@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.mayo.recyclerview.Logger;
+import com.mayo.recyclerview.LogBuilder;
 import com.mayo.recyclerview.R;
 
 public class ExpandableViewActivity extends AppCompatActivity {
@@ -43,14 +43,14 @@ public class ExpandableViewActivity extends AppCompatActivity {
     class MyGesture extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
-            Logger.print("onDown");
+            LogBuilder.build("onDown");
             //incrementedBy = 0;
             return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            //Logger.print("onScroll");
+            //LogBuilder.build("onScroll");
             if (distanceY < 0) {
                 moveAndScaleUp();
             } else {
@@ -67,11 +67,11 @@ public class ExpandableViewActivity extends AppCompatActivity {
 
     private void moveAndExpand2() {
         final ImageView iv = (ImageView) mLayoutLinear.findViewById(R.id.store_image);
-        Logger.print("Expand W: " + iv.getWidth() + " H: " + iv.getHeight());
+        LogBuilder.build("Expand W: " + iv.getWidth() + " H: " + iv.getHeight());
         //set initial dimensions
         if (incrementedBy == 0) {
             mImageInitialHeight = iv.getHeight();
-            Logger.print("Expand Initial H: " + mImageInitialHeight);
+            LogBuilder.build("Expand Initial H: " + mImageInitialHeight);
         }
 
         if (incrementedBy < (mImageInitialHeight - 100)) {
@@ -93,10 +93,10 @@ public class ExpandableViewActivity extends AppCompatActivity {
     private void collapseAndMove2() {
         if (!hasExpanded)
             return;
-        //Logger.print("collapse And Move");
+        //LogBuilder.build("collapse And Move");
 
         final ImageView iv = (ImageView) mLayoutLinear.findViewById(R.id.store_image);
-        Logger.print("Collapse W: " + iv.getWidth() + " H: " + iv.getHeight());
+        LogBuilder.build("Collapse W: " + iv.getWidth() + " H: " + iv.getHeight());
 
         if (incrementedBy > 0) {
             incrementedBy -= 10;
@@ -113,13 +113,13 @@ public class ExpandableViewActivity extends AppCompatActivity {
     }
 
     private void moveAndScaleUp() {
-//        Logger.print("Move And Expand");
+//        LogBuilder.build("Move And Expand");
 
         final ImageView iv = (ImageView) mLayoutLinear.findViewById(R.id.store_image);
         final TextView title = (TextView) mLayoutLinear.findViewById(R.id.reward_name);
         final LinearLayout mDetailsLayout = (LinearLayout) mLayoutLinear.findViewById(R.id.store_details_layout);
 
-        Logger.print("Expand T: " + iv.getTop() + " " + incrementedBy);
+        LogBuilder.build("Expand T: " + iv.getTop() + " " + incrementedBy);
 
         //set initial dimensions
         if (incrementedBy == 0) {
@@ -138,10 +138,10 @@ public class ExpandableViewActivity extends AppCompatActivity {
             mLayoutLinear.post(new Runnable() {
                 @Override
                 public void run() {
-                    //Logger.print("B H: " + mLayoutLinear.getLayoutParams().height + " " + iv.getHeight() + " " + mDetailsLayout.getTop());
+                    //LogBuilder.build("B H: " + mLayoutLinear.getLayoutParams().height + " " + iv.getHeight() + " " + mDetailsLayout.getTop());
                     //mLayoutLinear.getLayoutParams().height = mLayoutHeight + incrementedBy;
                     //mLayoutLinear.requestLayout();
-                    //Logger.print("A H: " + mLayoutLinear.getLayoutParams().height);
+                    //LogBuilder.build("A H: " + mLayoutLinear.getLayoutParams().height);
 
                     //iv.getLayoutParams().height = 450 + (incrementedBy / 2);
                     //iv.requestLayout();
@@ -168,12 +168,12 @@ public class ExpandableViewActivity extends AppCompatActivity {
     private void scaleDownAndMove() {
         if (!hasExpanded)
             return;
-        //Logger.print("collapse And Move");
+        //LogBuilder.build("collapse And Move");
 
         final ImageView iv = (ImageView) mLayoutLinear.findViewById(R.id.store_image);
         final LinearLayout mDetailsLayout = (LinearLayout) mLayoutLinear.findViewById(R.id.store_details_layout);
 
-        Logger.print("Collapse T: " + iv.getTop() + " H: " + iv.getHeight() + " Details Top: " + mDetailsLayout.getTop() + " " + incrementedBy);
+        LogBuilder.build("Collapse T: " + iv.getTop() + " H: " + iv.getHeight() + " Details Top: " + mDetailsLayout.getTop() + " " + incrementedBy);
         //set initial dimensions
         /*if (incrementedBy == 0) {
             mLayoutHeight = mLayoutLinear.getHeight();

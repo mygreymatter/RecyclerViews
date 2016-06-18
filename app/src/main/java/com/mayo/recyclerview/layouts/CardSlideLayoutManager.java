@@ -6,10 +6,9 @@ import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import com.mayo.recyclerview.Callback;
-import com.mayo.recyclerview.Logger;
+import com.mayo.recyclerview.DeckHeaderCallback;
+import com.mayo.recyclerview.LogBuilder;
 import com.mayo.recyclerview.R;
 
 /**
@@ -43,11 +42,11 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
     //private Map<Integer,Integer> mHeights;
     private Context mContext;
-    private Callback mCallback;
+    private DeckHeaderCallback mDeckHeaderCallback;
 
     public CardSlideLayoutManager(Context context,int density) {
         mContext = context;
-        mCallback = (Callback) context;
+        mDeckHeaderCallback = (DeckHeaderCallback) context;
 
         densityOfScreen = density;
         UP_RANGE = 333 * density;
@@ -101,7 +100,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             mRowsCanFit++;
         }
 
-        /*Logger.print("Recycler Height: " + mRecyclerViewHeight +
+        /*LogBuilder.build("Gazapp Height: " + mRecyclerViewHeight +
                 " FirstItem Height: " + mFirstItemHeight +
                 " DecoratedHeight: " + mDecoratedChildHeight +
                 " RowsCanFit: " + mRowsCanFit);*/
@@ -132,7 +131,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        //Logger.print("Rows: " + mVisibleRowCount);
+        //LogBuilder.build("Rows: " + mVisibleRowCount);
 
     }
 
@@ -144,7 +143,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
     private void updateSecondItem(int scrolledBy) {
         //reduces the distance from the top. scrolledBy is positive
 
-        //Logger.print("---------------------------------------------------------");
+        //LogBuilder.build("---------------------------------------------------------");
         if (scrolledBy > 0) {
             /*if (mSecondItemHeight + scrolledBy < mFirstItemHeight) {
                 mSecondItemHeight += scrolledBy;
@@ -158,13 +157,13 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                 mSecondItemTop = 0;
 
         } else if (scrolledBy < 0) {
-            //Logger.print("Top: " + 0 + " " + mSecondItemTop + " " + mSecondItemTop);
+            //LogBuilder.build("Top: " + 0 + " " + mSecondItemTop + " " + mSecondItemTop);
 
             //detects when the first item is moved down
             if(mSecondItemTop == mFirstItemHeight && mFirstItem > 0){
                 //reset the mFirstItem adapter index and its top
                 mFirstItem--;
-                //Logger.print("-----------------Down Transition------------------------");
+                //LogBuilder.build("-----------------Down Transition------------------------");
                 mSecondItemTop = 0;
             }
 
@@ -188,19 +187,19 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        //Logger.print("Updated Second Item Top: " + mSecondItemTop /*+ "  Height: " + mSecondItemHeight*/ + " scrolledBy: " + scrolledBy);
+        //LogBuilder.build("Updated Second Item Top: " + mSecondItemTop /*+ "  Height: " + mSecondItemHeight*/ + " scrolledBy: " + scrolledBy);
 
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private void layoutViews(int direction,int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        //Logger.print("Layout Views");
+        //LogBuilder.build("Layout Views");
 
         int startTopOffset = 0;
 
-        //Logger.print("\n------------------------------------------------------------");
+        //LogBuilder.build("\n------------------------------------------------------------");
         if (getChildCount() > 0) {
-            //Logger.print("Removing Views");
+            //LogBuilder.build("Removing Views");
             removeAllViews();
         }
 
@@ -209,7 +208,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
         for (int i = 0; i < mVisibleRowCount; i++) {
             adapterPostion = getAdapterPosition(i, mFirstItem);
-            //Logger.print("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
+            //LogBuilder.build("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
 
             if (adapterPostion == -1)
                 continue;
@@ -226,7 +225,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
                     //mHeights.put(adapterPostion,mFirstItemHeight);
 
-                    /*Logger.print(adapterPostion +
+                    /*LogBuilder.build(adapterPostion +
                             " FirstItem: " + mFirstItem +
                             " Top: 0" +
                             " Height: " + mFirstItemHeight);*/
@@ -238,7 +237,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             mSecondItemTop + /*mSecondItemHeight*/mFirstItemHeight);
 
-                    /*Logger.print(adapterPostion +
+                    /*LogBuilder.build(adapterPostion +
                             " FirstItem: " + mFirstItem +
                             " Top: " + mSecondItemTop +
                             " Height: " + mFirstItemHeight);*/
@@ -251,13 +250,13 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                     if(direction == DIRECTION_UP){
                         if(mSecondItemTop > UP_RANGE) {
                             vTop = mFirstItemHeight + mDecoratedChildHeight;
-                            //Logger.print("If Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
+                            //LogBuilder.build("If Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
                         }else {
                             vTop = mFirstItemHeight + mDecoratedChildHeight - (UP_RANGE - mSecondItemTop);
                             if(vTop < mFirstItemHeight){
                                 vTop = mFirstItemHeight;
                             }
-                            //Logger.print("Else Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
+                            //LogBuilder.build("Else Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
                         }
                     }else if(direction == DIRECTION_DOWN){
                         if(mSecondItemTop < DOWN_RANGE){
@@ -269,11 +268,11 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                             }
                         }
                     }else if(direction == DIRECTION_NONE){
-                        //Logger.print("Else If Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
+                        //LogBuilder.build("Else If Direction: " + mDirection + " Next Top: " + vTop + " Second Top: " + mSecondItemTop + " dy: " + dy);
                         vTop = mFirstItemHeight + mDecoratedChildHeight;
                     }
 
-                    /*Logger.print(adapterPostion + " FirstItem: " + mFirstItem +
+                    /*LogBuilder.build(adapterPostion + " FirstItem: " + mFirstItem +
                             " Direction: " + mDirection +
                             " Second Top: " + mSecondItemTop + " Next Top: " + vTop);*/
 
@@ -285,10 +284,10 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                     int h;
                     /*if(adapterPostion == getItemCount() - 1 && mVisibleRowCount == 3){
                         h = getVerticalSpace() - (mSecondItemTop + mSecondItemHeight);
-                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h + " Found Last");
+                        LogBuilder.build(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h + " Found Last");
                     }else{
                         h = mFirstItemHeight;
-                        Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
+                        LogBuilder.build(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop + " Height: " + h);
                     }*/
 
 
@@ -296,7 +295,7 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             vTop + mFirstItemHeight);
 
-                    //Logger.print(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop);
+                    //LogBuilder.build(adapterPostion + " FirstItem: " + mFirstItem + " Top: " + vTop);
 
                     vTop += mDecoratedChildHeight;
 
@@ -312,19 +311,19 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
             mFirstItem++;
             mSecondItemTop = mFirstItemHeight;
             //mSecondItemHeight = mDecoratedChildHeight;
-            //Logger.print("----------------------Transition--------------------------");
+            //LogBuilder.build("----------------------Transition--------------------------");
         }
 
     }
 
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
-        //Logger.print("Scrolled By: " + dy);
+        //LogBuilder.build("Scrolled By: " + dy);
 
         if (getChildCount() == 0)
             return 0;
 
-      /*Logger.print("scrollVertical: " + isSettling +
+      /*LogBuilder.build("scrollVertical: " + isSettling +
                   " Prev Direction: "  + (mDirection == DIRECTION_UP ? " UP" : "Down") +
                   " dy: " + dy);*/
         /*if(isSettling && mDirection == DIRECTION_DOWN && dy > 0)
@@ -334,22 +333,22 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
         boolean bottomBoundReached = false;
         boolean topBoundReached = false;
 
-        //Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
+        //LogBuilder.build("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
 
         if (mFirstItem == getItemCount() - 2) {
-            //Logger.print("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
+            //LogBuilder.build("First Item: " + mFirstItem + " Rows: " + mVisibleRowCount + " TotalItems: " + getItemCount());
             bottomBoundReached = true;
         } else if (mFirstItem == 0) {
             v = getChildAt(1);
             int top = getDecoratedTop(v);
-            //Logger.print("Top: " + top +" dy: " + dy);
+            //LogBuilder.build("Top: " + top +" dy: " + dy);
 
             /*if (-dy + top > mFirstItemHeight) {
                 dy = mFirstItemHeight - top;
-                Logger.print("Changed dy: " + dy);
+                LogBuilder.build("Changed dy: " + dy);
             }
 */
-            //Logger.print("Changed dy: " + dy + " Top: " + top + " " + mFirstItemHeight);
+            //LogBuilder.build("Changed dy: " + dy + " Top: " + top + " " + mFirstItemHeight);
             if (top == mFirstItemHeight) {
                 topBoundReached = true;
             }
@@ -357,16 +356,16 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
         if (dy > 0) {
             if (bottomBoundReached) {
-                Logger.print("BottomBound Reached!");
+                LogBuilder.build("BottomBound Reached!");
                 return 0;
             }
-            //Logger.print("Scrolling Up");
+            //LogBuilder.build("Scrolling Up");
         } else {
             if (topBoundReached) {
-                Logger.print("TopBound Reached!");
+                LogBuilder.build("TopBound Reached!");
                 return 0;
             }
-            //Logger.print("Scrolling Down");
+            //LogBuilder.build("Scrolling Down");
         }
 
         delta = -dy;
@@ -378,11 +377,11 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
 
         if (dy > 0) {
             mDirection = DIRECTION_UP;
-            //Logger.print("Direction UP: " + dy);
+            //LogBuilder.build("Direction UP: " + dy);
             layoutViews(DIRECTION_UP,dy, recycler, state);
         } else {
             mDirection = DIRECTION_DOWN;
-            //Logger.print("Direction DOWN: " + dy);
+            //LogBuilder.build("Direction DOWN: " + dy);
             layoutViews(DIRECTION_DOWN,dy, recycler, state);
         }
 
@@ -417,25 +416,25 @@ public class CardSlideLayoutManager extends RecyclerView.LayoutManager {
     public void onScrollStateChanged(int state) {
         switch (state){
             case RecyclerView.SCROLL_STATE_IDLE:
-                //Logger.print("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down"));
+                //LogBuilder.build("Scroll IDLE: " + (mDirection == DIRECTION_UP ? " UP" : "Down"));
 
                 if(mSecondItemTop < UP_RANGE && mDirection == DIRECTION_UP){
-                        mCallback.setFlingAction(mSecondItemTop);
-                            //mCallback.setFlingAction(mSecondItemTop);
+                        mDeckHeaderCallback.setFlingAction(mSecondItemTop);
+                            //mDeckHeaderCallback.setFlingAction(mSecondItemTop);
                         /*}else{
-                            mCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
+                            mDeckHeaderCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
                         }*/
                 }else if(mSecondItemTop > DOWN_RANGE && mDirection == DIRECTION_DOWN){
-                    mCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
+                    mDeckHeaderCallback.setFlingAction(mSecondItemTop - mFirstItemHeight);
                 }
 
 
                 break;
             case RecyclerView.SCROLL_STATE_DRAGGING:
-//                Logger.print("Scroll Dragging");
+//                LogBuilder.build("Scroll Dragging");
                 break;
             case RecyclerView.SCROLL_STATE_SETTLING:
-//                Logger.print("Scroll Settling");
+//                LogBuilder.build("Scroll Settling");
                 break;
         }
     }

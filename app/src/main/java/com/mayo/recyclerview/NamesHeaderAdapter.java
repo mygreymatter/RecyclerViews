@@ -19,7 +19,6 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     private final static int HEADER = 0;
     private final static int ITEM = 1;
-    private long[] timers = {40, 1800, 3600};
     private int prevFirstItem = -1;
 
     public NamesHeaderAdapter() {
@@ -37,18 +36,18 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        //Logger.print("-------------------Adapter Create View-----------------------------");
+        //LogBuilder.build("-------------------Adapter Create View-----------------------------");
         RecyclerView.ViewHolder holder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
         switch (viewType) {
             case HEADER:
-                View headerView = inflater.inflate(R.layout.header, parent, false);
+                View headerView = inflater.inflate(R.layout.r_lengthy_header, parent, false);
                 holder = new HeaderHolder(headerView);
 
                 break;
             case ITEM:
-                View itemView = inflater.inflate(R.layout.row_2, parent, false);
+                View itemView = inflater.inflate(R.layout.r, parent, false);
                 holder = new ItemHolder(itemView);
                 break;
         }
@@ -57,7 +56,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-//        Logger.print("Adapter Bind View: " + position);
+//        LogBuilder.build("Adapter Bind View: " + position);
         switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
@@ -91,37 +90,36 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     private void configureHeaderView(final HeaderHolder holder, int position) {
-        Logger.print("\n-------------------------------------");
-        if (Recycler.getInstance().hasExpanded) {
+//        LogBuilder.build("\n-------------------------------------");
+        if (Gazapp.getGazapp().hasExpanded) {
             final ImageView iv = (ImageView) holder.innerLayout.findViewById(R.id.store_image);
 
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) iv.getLayoutParams();
-//            Logger.print("Binding Image Dimension: " + Recycler.getInstance().imageDimension + " " + params.height);
-            params.height = Recycler.getInstance().imageDimension;
-            params.width = Recycler.getInstance().imageDimension;
+//            LogBuilder.build("Binding Image Dimension: " + Gazapp.getGazapp().imageDimension + " " + params.height);
+            params.height = Gazapp.getGazapp().imageDimension;
+            params.width = Gazapp.getGazapp().imageDimension;
             iv.setLayoutParams(params);
 
             holder.innerLayout.requestLayout();
-        } else if (Recycler.getInstance().hasHeaderSticky) {
-            Logger.print("Has sticky header");
+        } else if (Gazapp.getGazapp().hasHeaderSticky) {
+//            LogBuilder.build("Has sticky r_lengthy_header");
 
-            if (prevFirstItem != Recycler.getInstance().firstItem) {
-                prevFirstItem = Recycler.getInstance().firstItem;
+            if (prevFirstItem != Gazapp.getGazapp().firstItem) {
+                prevFirstItem = Gazapp.getGazapp().firstItem;
                 //multiply with thousand to convert into milliseconds
                 time = (prevFirstItem % 2 == 0 ? 1800 : 3600) * 1000;
-                Logger.print("Pos: " + prevFirstItem + " Time: " + time);
-              /*  holder.spotRewards.setText("Expires in: " + getFormattedTimeString(time / 1000));
-                setTime(time, holder.spotRewards);*/
+//                LogBuilder.build("Pos: " + prevFirstItem + " Time: " + time);
+                holder.spotRewards.setText("Expires in: " + getFormattedTimeString(time / 1000));
+                setTime(time, holder.spotRewards);
             }
             holder.spotRewards.setText("Expires in: " + getFormattedTimeString(time / 1000));
             setTime(time, holder.spotRewards);
 
         } else {
-            Logger.print("No sticky header");
+//            LogBuilder.build("No sticky r_lengthy_header");
             holder.spotRewards.setText("#SpotRewards");
         }
-
-        Logger.print("Spot Rewards: " + holder.spotRewards.getText().toString());
+//        LogBuilder.build("Spot Rewards: " + holder.spotRewards.getText().toString());
     }
 
     CountDownTimer downTimer;
@@ -138,7 +136,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             @Override
             public void onTick(long tick) {
                 time = tick;
-                //Logger.print("setTime Spot Rewards: " + v.getText().toString());
+                //LogBuilder.build("setTime Spot Rewards: " + v.getText().toString());
                 v.setText("Expires in: " + getFormattedTimeString(tick / 1000));
             }
 
