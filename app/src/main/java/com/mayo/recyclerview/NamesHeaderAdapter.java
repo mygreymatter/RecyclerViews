@@ -152,7 +152,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
-        return 4 + 1;
+        return 20 + 1;
     }
 
     private String getFormattedTimeString(long timeInSeconds) {

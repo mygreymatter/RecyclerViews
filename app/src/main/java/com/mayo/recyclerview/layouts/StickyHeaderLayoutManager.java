@@ -53,9 +53,10 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     private int mHeaderImageInitialHeight;
     private int incrementedBy = 0;
     private boolean justStarted;
-    private boolean canReset;
+    private boolean canScrollToBorders;
     private int mPrevFirstItem;
     private boolean isCalledOnce;
+    private boolean canAnimate;
 
     public StickyHeaderLayoutManager(Context context, int density) {
         mContext = context;
@@ -493,6 +494,8 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
             measureChildWithMargins(v, 0, 0);
 
+            boolean hasAnimCondMet = mDirection != DIRECTION_NONE && getItemCount() > 2;
+
             switch (i) {
 
                 case 1:
@@ -504,11 +507,9 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                             mDecoratedChildWidth,
                             mFirstItemTop + mFirstItemHeight);
 
-                    /*LogBuilder.build(adapterPostion + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight +
-                            " JustStarted: " + justStarted + " " + incrementedBy);*/
+//                    LogBuilder.build(i + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight);
 
-                    if (mDirection != DIRECTION_NONE && getItemCount() > 2 && !(mHeaderTop == HEADER_TOP)) {
-//                        LogBuilder.build("1");
+                    if (hasAnimCondMet && canAnimate) {
                         mDeckHeaderCallback.animateView(v, mFirstItemTop);
                     }
 
@@ -529,16 +530,12 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
                     vTop = getThirdItem(dy);
 
-                    /*LogBuilder.build(adapterPostion +
-                            " Top: " + mSecondItemTop +
-                            " Next vTop: " + vTop +
-                            " Height: " + mFirstItemHeight);*/
+//                    LogBuilder.build(i + " Top: " + mSecondItemTop);
 
                     /*if (mDirection != DIRECTION_NONE)
                         setAnimations(v, mSecondItemTop);*/
 
-                    if (mDirection != DIRECTION_NONE && getItemCount() > 2 && (mHeaderTop == HEADER_TOP)) {
-//                        LogBuilder.build("2");
+                    if (hasAnimCondMet && canAnimate) {
                         mDeckHeaderCallback.animateView(v, mSecondItemTop);
                     }
 
@@ -556,9 +553,14 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                             " Next Top: " + (vTop + mDecoratedChildHeight) +
                             " Height: " + mFirstItemHeight);*/
 
+                    if (hasAnimCondMet && canAnimate) {
+                        mDeckHeaderCallback.animateView(v, vTop);
+                    }
+
                     vTop += mDecoratedChildHeight;
                     break;
             }
+
 
             if (created) {
                 addView(v);
@@ -757,7 +759,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                     return;
                 }*/
 
-                if (canReset) {
+                if (canScrollToBorders) {
                     switch (mDirection) {
                         case DIRECTION_UP:
                             if (!bottomBoundReached) {
@@ -849,7 +851,14 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     /**
      * @param canReset the item scrolls to top or bottom if true
      */
-    public void setCanReset(boolean canReset) {
-        this.canReset = canReset;
+    public void setScrollingToBorders(boolean canReset) {
+        this.canScrollToBorders = canReset;
+    }
+
+    /**
+     * @param canAnimate
+     */
+    public void setItemAnimatation(boolean canAnimate) {
+        this.canAnimate = canAnimate;
     }
 }

@@ -35,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
 
         mAdapter = new NamesHeaderAdapter();
         mLayoutManager = new StickyHeaderLayoutManager(this, getScreenDensity());
-        mLayoutManager.setCanReset(true);
+        mLayoutManager.setScrollingToBorders(true);
+        mLayoutManager.setItemAnimatation(true);
 
         mRecycler.setLayoutManager(mLayoutManager);
         mRecycler.setAdapter(mAdapter);
