@@ -9,5 +9,6 @@ public interface DeckHeaderCallback {
     void setFlingAction(int dy);
     void setStickyHeader(boolean sticked,int firstItem);
     void setHeader(int firstItem);
-    void animateFirstItem(View v,int firstItemTop);
+
+    void animateView(View v, int top);
 }

@@ -1,6 +1,5 @@
 package com.mayo.recyclerview;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -9,7 +8,6 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.GestureDetector;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -22,8 +20,8 @@ import com.mayo.recyclerview.layouts.StickyHeaderLayoutManager;
 public class MainActivity extends AppCompatActivity implements DeckHeaderCallback {
 
     private RecyclerView mRecycler;
-    private NamesHeaderAdapter mLengthyAdapter;
-    private StickyHeaderLayoutManager mLengthyManager;
+    private NamesHeaderAdapter mAdapter;
+    private StickyHeaderLayoutManager mLayoutManager;
     private GestureDetectorCompat mDetector;
 
 
@@ -35,10 +33,12 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
 
         mRecycler = (RecyclerView) findViewById(R.id.names_list);
 
-        mLengthyAdapter = new NamesHeaderAdapter();
-        mLengthyManager = new StickyHeaderLayoutManager(this, getScreenDensity());
-        mRecycler.setLayoutManager(mLengthyManager);
-        mRecycler.setAdapter(mLengthyAdapter);
+        mAdapter = new NamesHeaderAdapter();
+        mLayoutManager = new StickyHeaderLayoutManager(this, getScreenDensity());
+        mLayoutManager.setCanReset(true);
+
+        mRecycler.setLayoutManager(mLayoutManager);
+        mRecycler.setAdapter(mAdapter);
 
         mRecycler.setHasFixedSize(true);
 
@@ -92,64 +92,50 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
     }
 
     @Override
-    public  void animateFirstItem(View v,int firstItemTop){
-        LogBuilder.build("Animate FirstItemTop: " + firstItemTop + " " + mRecycler.getChildCount());
+    public void animateView(View v, int top) {
 
         int size = 30;
         float alpha = 0.2f;
-        boolean canBold = false;
 
         RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
         TextView rewardName = (TextView) r.findViewById(R.id.reward_name);
         LinearLayout ll = (LinearLayout) r.findViewById(R.id.info_layout);
 
-        switch (firstItemTop / 100) {
-            case 4:
-                size = 40;
-                alpha = 1.0f;
-                canBold = true;
-                break;
-            case 5:
+        switch (top / 100) {
+            case 1:
                 size = 38;
-                alpha = 0.8f;
-                canBold = true;
+                alpha = 1.0f;
                 break;
-            case 6:
+            case 2:
                 size = 36;
-                alpha = 0.6f;
-                canBold = true;
+                alpha = 0.8f;
                 break;
-            case 7:
+            case 3:
                 size = 34;
+                alpha = 0.6f;
+                break;
+            case 4:
+                size = 32;
                 alpha = 0.4f;
                 break;
-            case 8:
-                size = 32;
-                alpha = 0.2f;
-                break;
-            case 9:
-                size = 30;
-                break;
+
             default:
-                if (firstItemTop >= 1000) {
+                if (top >= 1000) {
                     size = 30;
                     alpha = 0.2f;
-                } else if (firstItemTop < 400) {
-                    size = 40;
+                } else if (top < 100) {
+                    size = 38;
                     alpha = 1.0f;
-                    canBold = true;
                 }
                 break;
         }
 
+//        LogBuilder.build("Animate Top: " + top + " Alpha: " + alpha + " Size: " + size);
+
         rewardName.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
-        if (canBold) {
-            rewardName.setTypeface(rewardName.getTypeface(), Typeface.BOLD);
-            ll.setAlpha(1.0f);
-        } else {
-            rewardName.setTypeface(rewardName.getTypeface(), Typeface.NORMAL);
-            ll.setAlpha(alpha);
-        }
+        //rewardName.setTypeface(rewardName.getTypeface(), Typeface.BOLD);
+        ll.setAlpha(alpha);
+
     }
 
     @Override
@@ -186,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 //            LogBuilder.build("onFling yVelocity: " + velocityY + " " + (e2.getY() - e1.getY()));
-            setFlingAction(mLengthyManager.getFlingDisplacement(velocityY));
+            setFlingAction(mLayoutManager.getFlingDisplacement(velocityY));
             return true;
         }
 

@@ -53,7 +53,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     private int mHeaderImageInitialHeight;
     private int incrementedBy = 0;
     private boolean justStarted;
-    private boolean hasChanged;
+    private boolean canReset;
     private int mPrevFirstItem;
     private boolean isCalledOnce;
 
@@ -287,7 +287,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                 if ((mSecondItemTop - scrolledBy) <= HEADER_VISIBLE_AREA) {
                     mPrevFirstItem = mFirstItem;
                     mFirstItem++;
-                    if(mFirstItem < getItemCount() -2) {
+                    if (mFirstItem < getItemCount() - 2) {
                         mFirstItemTop = mSecondItemTop;
                     }
                     mSecondItemTop = mFirstItemTop + mFirstItemHeight;
@@ -475,7 +475,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             }
 
             adapterPostion = getAdapterPosition(i, mFirstItem);
-//            LogBuilder.build("Adapter Position: " + adapterPostion + " " + i + " FirstItem: " + mFirstItem);
+//            LogBuilder.build("Adapter Position: " + adapterPostion + " i: " + i + " FirstItem: " + mFirstItem);
 
             created = false;
 
@@ -507,9 +507,9 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                     /*LogBuilder.build(adapterPostion + " Top: " + mFirstItemTop + " Height: " + mFirstItemHeight +
                             " JustStarted: " + justStarted + " " + incrementedBy);*/
 
-                    if (mDirection != DIRECTION_NONE && getItemCount() > 2) {
-//                        setAnimations(v, mFirstItemTop);
-//                        mDeckHeaderCallback.animateFirstItem(v,mFirstItemTop);
+                    if (mDirection != DIRECTION_NONE && getItemCount() > 2 && !(mHeaderTop == HEADER_TOP)) {
+//                        LogBuilder.build("1");
+                        mDeckHeaderCallback.animateView(v, mFirstItemTop);
                     }
 
                     break;
@@ -536,6 +536,11 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
                     /*if (mDirection != DIRECTION_NONE)
                         setAnimations(v, mSecondItemTop);*/
+
+                    if (mDirection != DIRECTION_NONE && getItemCount() > 2 && (mHeaderTop == HEADER_TOP)) {
+//                        LogBuilder.build("2");
+                        mDeckHeaderCallback.animateView(v, mSecondItemTop);
+                    }
 
                     /*if (Gazapp.getGazapp().hasExpanded)
                         vTop = mSecondItemTop + mDecoratedChildHeight;*/
@@ -752,57 +757,58 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                     return;
                 }*/
 
-                switch (mDirection) {
-                    case DIRECTION_UP:
-
-                        if (!bottomBoundReached) {
-                            if (mFirstItem == 1 && mFirstItemTop > HEADER_VISIBLE_AREA) {
-                                if (mFirstItemTop < UP_THRESHOLD && !justStarted) {
+                if (canReset) {
+                    switch (mDirection) {
+                        case DIRECTION_UP:
+                            if (!bottomBoundReached) {
+                                if (mFirstItem == 1 && mFirstItemTop > HEADER_VISIBLE_AREA) {
+                                    if (mFirstItemTop < UP_THRESHOLD && !justStarted) {
 //                                    LogBuilder.build("Up If: " + justStarted);
+                                        mDeckHeaderCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
+                                    } else {
+//                                    LogBuilder.build("Up else: " + justStarted);
+                                        mDeckHeaderCallback.setFlingAction(mHeaderTop);
+                                    }
+                                } else if (mFirstItem >= 1 && mFirstItemTop == HEADER_VISIBLE_AREA) {
+                                    if (mSecondItemTop < UP_THRESHOLD) {
+//                                    LogBuilder.build("else if : " + justStarted);
+                                        mDeckHeaderCallback.setFlingAction(mSecondItemTop - mFirstItemTop);
+                                    } else {
+//                                    LogBuilder.build("else if else: " + justStarted);
+                                        mDeckHeaderCallback.setFlingAction(mSecondItemTop - (HEADER_VISIBLE_AREA + mFirstItemHeight));
+                                    }
+                                }
+                            }
+
+                            break;
+                        case DIRECTION_DOWN:
+
+                            if (mFirstItemTop == HEADER_VISIBLE_AREA) {
+                                if (mSecondItemTop > DOWN_THRESHOLD)
+                                    mDeckHeaderCallback.setFlingAction(mSecondItemTop - (mFirstItemHeight + HEADER_VISIBLE_AREA));
+                                else
+                                    mDeckHeaderCallback.setFlingAction(mSecondItemTop - HEADER_VISIBLE_AREA);
+                            } else {
+                                if (mFirstItemTop < DOWN_THRESHOLD) {
+//                                LogBuilder.build("Down Else IF  if: " + justStarted);
                                     mDeckHeaderCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
                                 } else {
-//                                    LogBuilder.build("Up else: " + justStarted);
-                                    mDeckHeaderCallback.setFlingAction(mHeaderTop);
-                                }
-                            } else if (mFirstItem >= 1 && mFirstItemTop == HEADER_VISIBLE_AREA) {
-                                if (mSecondItemTop < UP_THRESHOLD) {
-//                                    LogBuilder.build("else if : " + justStarted);
-                                    mDeckHeaderCallback.setFlingAction(mSecondItemTop - mFirstItemTop);
-                                } else {
-//                                    LogBuilder.build("else if else: " + justStarted);
-                                    mDeckHeaderCallback.setFlingAction(mSecondItemTop - (HEADER_VISIBLE_AREA + mFirstItemHeight));
-                                }
-                            }
-                        }
-
-                        break;
-                    case DIRECTION_DOWN:
-
-                        if (mFirstItemTop == HEADER_VISIBLE_AREA) {
-                            if (mSecondItemTop > DOWN_THRESHOLD)
-                                mDeckHeaderCallback.setFlingAction(mSecondItemTop - (mFirstItemHeight + HEADER_VISIBLE_AREA));
-                            else
-                                mDeckHeaderCallback.setFlingAction(mSecondItemTop - HEADER_VISIBLE_AREA);
-                        } else {
-                            if (mFirstItemTop < DOWN_THRESHOLD) {
-//                                LogBuilder.build("Down Else IF  if: " + justStarted);
-                                mDeckHeaderCallback.setFlingAction(mFirstItemTop - HEADER_VISIBLE_AREA);
-                            } else {
-                                mDeckHeaderCallback.setFlingAction(mFirstItemTop - mHeaderHeight);
+                                    mDeckHeaderCallback.setFlingAction(mFirstItemTop - mHeaderHeight);
 //                                LogBuilder.build("Down Else IF  else: " + justStarted);
-                                if (justStarted)
-                                    justStarted = false;
+                                    if (justStarted)
+                                        justStarted = false;
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
 
                 break;
             case RecyclerView.SCROLL_STATE_DRAGGING:
-//                LogBuilder.build("Scroll Dragging");
+                //                LogBuilder.build("Scroll Dragging");
                 break;
             case RecyclerView.SCROLL_STATE_SETTLING:
-//                LogBuilder.build("Scroll Settling: " + mFirstItemTop);
+                //                LogBuilder.build("Scroll Settling: " + mFirstItemTop);
                 break;
         }
     }
@@ -838,5 +844,12 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 //                " SecondTop: " + mSecondItemTop +
 //                " Displacement: " + displacement);
         return displacement;
+    }
+
+    /**
+     * @param canReset the item scrolls to top or bottom if true
+     */
+    public void setCanReset(boolean canReset) {
+        this.canReset = canReset;
     }
 }
