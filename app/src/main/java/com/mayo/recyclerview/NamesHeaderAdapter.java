@@ -59,7 +59,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-        LogBuilder.build("Adapter Bind View: " + position);
+//        LogBuilder.build("Adapter Bind View: " + position);
         switch (holder.getItemViewType()) {
             case HEADER:
                 HeaderHolder headerHolder = (HeaderHolder) holder;
@@ -152,7 +152,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public int getItemCount() {
-        return 20 + 1;
+        return 4 + 1;
     }
 
     private String getFormattedTimeString(long timeInSeconds) {

@@ -1,14 +1,21 @@
 package com.mayo.recyclerview;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.mayo.recyclerview.layouts.StickyHeaderLayoutManager;
 
@@ -66,13 +73,87 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         mRecycler.smoothScrollBy(0, dy);
     }
 
-    /*public void scrollUp(View v){
-        mRecycler.smoothScrollBy(0, 100);
-    }*/
-
 
     @Override
     public void setStickyHeader(boolean sticked, int firstItem) {
+        if(mRecycler.getChildCount() > 0){
+            View v = mRecycler.getChildAt(0);
+            RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+            LinearLayout l = (LinearLayout) r.findViewById(R.id.store_details_layout);
+            TextView t = (TextView) l.findViewById(R.id.spot_rewards);
+
+            if(sticked) {
+                t.setText("Reward " + firstItem);
+            }else{
+                t.setText("#Spotrewards");
+            }
+
+        }
+    }
+
+    @Override
+    public  void animateFirstItem(View v,int firstItemTop){
+        LogBuilder.build("Animate FirstItemTop: " + firstItemTop + " " + mRecycler.getChildCount());
+
+        int size = 30;
+        float alpha = 0.2f;
+        boolean canBold = false;
+
+        RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
+        TextView rewardName = (TextView) r.findViewById(R.id.reward_name);
+        LinearLayout ll = (LinearLayout) r.findViewById(R.id.info_layout);
+
+        switch (firstItemTop / 100) {
+            case 4:
+                size = 40;
+                alpha = 1.0f;
+                canBold = true;
+                break;
+            case 5:
+                size = 38;
+                alpha = 0.8f;
+                canBold = true;
+                break;
+            case 6:
+                size = 36;
+                alpha = 0.6f;
+                canBold = true;
+                break;
+            case 7:
+                size = 34;
+                alpha = 0.4f;
+                break;
+            case 8:
+                size = 32;
+                alpha = 0.2f;
+                break;
+            case 9:
+                size = 30;
+                break;
+            default:
+                if (firstItemTop >= 1000) {
+                    size = 30;
+                    alpha = 0.2f;
+                } else if (firstItemTop < 400) {
+                    size = 40;
+                    alpha = 1.0f;
+                    canBold = true;
+                }
+                break;
+        }
+
+        rewardName.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+        if (canBold) {
+            rewardName.setTypeface(rewardName.getTypeface(), Typeface.BOLD);
+            ll.setAlpha(1.0f);
+        } else {
+            rewardName.setTypeface(rewardName.getTypeface(), Typeface.NORMAL);
+            ll.setAlpha(alpha);
+        }
+    }
+
+    @Override
+    public void setHeader(int firstItem) {
 
     }
 
@@ -82,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         DisplayMetrics metrics = new DisplayMetrics();
         display.getMetrics(metrics);
 
-//        LogBuilder.build("Density: " + metrics.densityDpi + " " + metrics.density);
+        LogBuilder.build("Density: " + metrics.densityDpi + " " + metrics.density);
         return (int) metrics.density;
     }
 
