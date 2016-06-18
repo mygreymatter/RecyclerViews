@@ -7,7 +7,6 @@ import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -510,7 +509,7 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
                     if (mDirection != DIRECTION_NONE && getItemCount() > 2) {
 //                        setAnimations(v, mFirstItemTop);
-                        mDeckHeaderCallback.animateFirstItem(v,mFirstItemTop);
+//                        mDeckHeaderCallback.animateFirstItem(v,mFirstItemTop);
                     }
 
                     break;
