@@ -44,16 +44,13 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         mRecycler.setHasFixedSize(true);
 
 
-        /*
         mDetector = new GestureDetectorCompat(this, new MyGesture());
         mRecycler.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (mDetector.onTouchEvent(event))
-                    return true;
-                return false;
+                return mDetector.onTouchEvent(event);
             }
-        });*/
+        });
     }
 
     @Override
