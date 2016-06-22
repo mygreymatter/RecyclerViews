@@ -50,7 +50,7 @@ public class NamesHeaderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
                 break;
             case ITEM:
-                View itemView = inflater.inflate(R.layout.r, parent, false);
+                View itemView = inflater.inflate(R.layout.r_name, parent, false);
                 holder = new ItemHolder(itemView);
                 break;
         }

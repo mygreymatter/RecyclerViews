@@ -25,7 +25,7 @@ public class NamesAdapter extends RecyclerView.Adapter<NamesAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         //LogBuilder.build("Create View");
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.r, parent, false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.r_name, parent, false));
     }
 
     @Override
