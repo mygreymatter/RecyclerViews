@@ -2,11 +2,9 @@ package com.mayo.recyclerview.layouts;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -46,22 +44,18 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     private int mDirection;
     private View v;
     private RelativeLayout r;
-    private Context mContext;
     private DeckHeaderCallback mDeckHeaderCallback;
     private boolean hasTransition;
     private int vTop;
-    private int mHeaderImageInitialHeight;
     private int incrementedBy = 0;
     private boolean justStarted;
     private boolean canScrollToBorders;
     private int mPrevFirstItem;
-    private boolean isCalledOnce;
     private boolean canAnimate;
+    private RecyclerView.Recycler mRecyler;
 
-    public StickyHeaderLayoutManager(Context context, int density) {
-        mContext = context;
+    public StickyHeaderLayoutManager(Context context) {
         mDeckHeaderCallback = (DeckHeaderCallback) context;
-
     }
 
     @Override
@@ -82,6 +76,9 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
         if (getChildCount() == 0 && state.isPreLayout()) {
             return;
         }
+
+        mRecyclerViewHeight = getVerticalSpace();
+        mRecyler = recycler;
 
         if (getChildCount() == 0) {
             View scrap = recycler.getViewForPosition(0);
@@ -126,29 +123,30 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             mDecoratedChildHeight = t.getMeasuredHeight();
 
             HEADER_TOP = HEADER_VISIBLE_AREA - mHeaderHeight;
-        }
 
-        mRecyclerViewHeight = getVerticalSpace();
-        UP_THRESHOLD = (int) (0.7 * mRecyclerViewHeight);
-        DOWN_THRESHOLD = (int) (0.18 * mRecyclerViewHeight);
+            UP_THRESHOLD = (int) (0.7 * mRecyclerViewHeight);
+            DOWN_THRESHOLD = (int) (0.18 * mRecyclerViewHeight);
 
-        mSecondItemTop = mFirstItemHeight;
+            mSecondItemTop = mFirstItemHeight;
 
-        mFirstItem = 1;
-        mPrevFirstItem = 1;
-        //initialize the tops
-        mHeaderTop = 0;
-        mFirstItemTop = mHeaderHeight;
-        mSecondItemTop = mFirstItemTop + mDecoratedChildHeight;
+            mFirstItem = 1;
+            mPrevFirstItem = 1;
+            //initialize the tops
+            mHeaderTop = 0;
+            mFirstItemTop = mHeaderHeight;
+            mSecondItemTop = mFirstItemTop + mDecoratedChildHeight;
 
-        int areaLeft = mRecyclerViewHeight - mHeaderHeight;
-        int otherRows = areaLeft / mDecoratedChildHeight;
+            int areaLeft = mRecyclerViewHeight - mHeaderHeight;
+            int otherRows = areaLeft / mDecoratedChildHeight;
 
-        //num of rows when the app is started
-        mRowsCanFit = areaLeft / mDecoratedChildHeight + 1;
+            //num of rows when the app is started
+            mRowsCanFit = areaLeft / mDecoratedChildHeight + 1;
 
-        if (areaLeft - (otherRows * mDecoratedChildHeight) > 0) {
-            mRowsCanFit++;
+            if (areaLeft - (otherRows * mDecoratedChildHeight) > 0) {
+                mRowsCanFit++;
+            }
+
+            updateMagnetVisibleRowCount();
         }
 
 //        LogBuilder.build("RH: " + mRecyclerViewHeight +
@@ -158,15 +156,8 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 //                " Header Visible Area: " + HEADER_VISIBLE_AREA +
 //                " RowsCanFit: " + mRowsCanFit);
 
-        updateMagnetVisibleRowCount();
         detachAndScrapAttachedViews(recycler);
-
         layoutViews(0, recycler);
-
-        /*if (isCalledOnce) {
-            scrollVerticallyBy(500, recycler, state);
-        }
-        isCalledOnce = true;*/
     }
 
     /**
@@ -184,28 +175,14 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
 
     private void updateHeaderTop(int scrolledBy) {
         if (scrolledBy > 0) {
-            /*if (mHeaderTop == 0 && Gazapp.getGazapp().hasExpanded) {
-                if (incrementedBy > 0) {
-                    setElasticEffect(scrolledBy);
-                } else {
-                    Gazapp.getGazapp().hasExpanded = false;
-                }
-            } else {*/
             mHeaderTop -= scrolledBy;
             if (mHeaderTop < HEADER_TOP) {
                 mHeaderTop = HEADER_TOP;
 
             }
-//            }
-//            LogBuilder.build("Up Header Top: " + mHeaderTop + " " + Gazapp.getGazapp().hasHeaderSticky);
         } else {
-            if (mHeaderTop == 0) {
-                //LogBuilder.build("Header is at top.");
-//                setElasticEffect(scrolledBy);
-
-            } else if (mSecondItemTop >= mFirstItemHeight + HEADER_VISIBLE_AREA && mFirstItem == 1) {//check whether the second item is at the bottom
+            if (mSecondItemTop >= mFirstItemHeight + HEADER_VISIBLE_AREA && mFirstItem == 1) {//check whether the second item is at the bottom
                 mHeaderTop -= scrolledBy;
-//                LogBuilder.build("If Header Top: " + mHeaderTop + " scrolled: " + scrolledBy);
                 if (mHeaderTop > 0) {
                     mHeaderTop = 0;
                 }
@@ -217,7 +194,6 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
                 mFirstItem--;
                 hasTransition = true;
             }
-//            LogBuilder.build("Header First Item: " + mFirstItem + " Second Top: " + mSecondItemTop + " Transition: " + hasTransition);
         }
 
         mDeckHeaderCallback.setStickyHeader(mHeaderTop == HEADER_TOP, mFirstItem);
@@ -585,66 +561,6 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
         mDeckHeaderCallback.setHeader(mFirstItem);
     }
 
-    private void setAnimations(View v, int top) {
-        int size = 30;
-        float alpha = 0.2f;
-        boolean canBold = false;
-
-        r = (RelativeLayout) v.findViewById(R.id.inner_layout);
-        TextView rewardName = (TextView) r.findViewById(R.id.reward_name);
-        LinearLayout ll = (LinearLayout) r.findViewById(R.id.info_layout);
-
-        switch (top / 100) {
-            case 4:
-                size = 40;
-                alpha = 1.0f;
-                canBold = true;
-                break;
-            case 5:
-                size = 38;
-                alpha = 0.8f;
-                canBold = true;
-                break;
-            case 6:
-                size = 36;
-                alpha = 0.6f;
-                canBold = true;
-                break;
-            case 7:
-                size = 34;
-                alpha = 0.4f;
-                break;
-            case 8:
-                size = 32;
-                alpha = 0.2f;
-                break;
-            case 9:
-                size = 30;
-                break;
-            default:
-                if (top >= 1000) {
-                    size = 30;
-                    alpha = 0.2f;
-                } else if (top < 400) {
-                    size = 40;
-                    alpha = 1.0f;
-                    canBold = true;
-                }
-                break;
-        }
-
-        //LogBuilder.build("Top: "+ top + " Size: " + size);
-        rewardName.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
-        if (canBold) {
-            rewardName.setTypeface(rewardName.getTypeface(), Typeface.BOLD);
-            ll.setAlpha(1.0f);
-        } else {
-            rewardName.setTypeface(rewardName.getTypeface(), Typeface.NORMAL);
-            ll.setAlpha(alpha);
-        }
-        //LogBuilder.build("Alpha");
-    }
-
     @Override
     public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.
             State state) {
@@ -837,10 +753,6 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
             }
         }
 
-        /*if (Gazapp.getGazapp().hasExpanded && mHeaderTop == 0 && Gazapp.getGazapp().imageDimension > 450) {
-            onScrollStateChanged(RecyclerView.SCROLL_STATE_IDLE);
-        }*/
-
 //        LogBuilder.build("Displacement: FirstItem: " + mFirstItem +
 //                /*" FirstItem Top: " + mFirstItemTop +*/
 //                " SecondTop: " + mSecondItemTop +
@@ -856,9 +768,28 @@ public class StickyHeaderLayoutManager extends RecyclerView.LayoutManager {
     }
 
     /**
-     * @param canAnimate
+     * @param canAnimate - callbacks listener that animates the item if true
      */
     public void setItemAnimatation(boolean canAnimate) {
         this.canAnimate = canAnimate;
     }
+
+
+    /**
+     * sets the adapter position pos as the firstitem without scrolling
+     *
+     * @param pos - adapterposition
+     */
+    public void moveToPosition(int pos) {
+        mFirstItem = pos;
+
+        mHeaderTop = HEADER_TOP;
+        mFirstItemTop = HEADER_VISIBLE_AREA;
+        mSecondItemTop = mFirstItemTop + mFirstItemHeight;
+        vTop = mSecondItemTop + mDecoratedChildHeight;
+
+        layoutViews(10, mRecyler);
+        LogBuilder.build("setFirstItem: " + pos + " " + mRecyclerViewHeight);
+    }
+
 }

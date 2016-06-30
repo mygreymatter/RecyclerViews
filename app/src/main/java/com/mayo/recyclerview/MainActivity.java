@@ -1,6 +1,7 @@
 package com.mayo.recyclerview;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
     private NamesHeaderAdapter mAdapter;
     private StickyHeaderLayoutManager mLayoutManager;
     private GestureDetectorCompat mDetector;
+    private String label;
 
 
     @Override
@@ -34,11 +36,12 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
         mRecycler = (RecyclerView) findViewById(R.id.names_list);
 
         mAdapter = new NamesHeaderAdapter();
-        mLayoutManager = new StickyHeaderLayoutManager(this, getScreenDensity());
+        mLayoutManager = new StickyHeaderLayoutManager(this);
         mLayoutManager.setScrollingToBorders(true);
         mLayoutManager.setItemAnimatation(true);
 
         mRecycler.setLayoutManager(mLayoutManager);
+
         mRecycler.setAdapter(mAdapter);
 
         mRecycler.setHasFixedSize(true);
@@ -51,6 +54,15 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
                 return mDetector.onTouchEvent(event);
             }
         });
+
+        mRecycler.setAlpha(0);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mLayoutManager.moveToPosition(19);
+                mRecycler.setAlpha(1);
+            }
+        }, 500);
     }
 
     @Override
@@ -74,17 +86,19 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
 
     @Override
     public void setStickyHeader(boolean sticked, int firstItem) {
-        if(mRecycler.getChildCount() > 0){
+        if (mRecycler.getChildCount() > 0) {
             View v = mRecycler.getChildAt(0);
             RelativeLayout r = (RelativeLayout) v.findViewById(R.id.inner_layout);
             LinearLayout l = (LinearLayout) r.findViewById(R.id.store_details_layout);
             TextView t = (TextView) l.findViewById(R.id.spot_rewards);
 
-            if(sticked) {
-                t.setText("Reward " + firstItem);
-            }else{
-                t.setText("#Spotrewards");
+            if (sticked) {
+                label = "Reward " + firstItem;
+            } else {
+                label = "#Spotrewards";
             }
+
+            t.setText(label);
 
         }
     }
@@ -127,8 +141,6 @@ public class MainActivity extends AppCompatActivity implements DeckHeaderCallbac
                 }
                 break;
         }
-
-//        LogBuilder.build("Animate Top: " + top + " Alpha: " + alpha + " Size: " + size);
 
         rewardName.setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
         //rewardName.setTypeface(rewardName.getTypeface(), Typeface.BOLD);
