@@ -10,12 +10,5 @@
         android:id="@+id/names_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <!--<Button
-        android:layout_alignParentBottom="true"
-        android:text="Up"
-        android:onClick="scrollUp"
-        android:textSize="30sp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />-->
 
 </RelativeLayout>

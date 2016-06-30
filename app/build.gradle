@@ -29,6 +29,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:recyclerview-v7:23.4.0'
     compile 'de.hdodenhof:circleimageview:2.0.0'
+    compile 'com.github.gabrielemariotti.recyclerview:recyclerview-animators:0.3.0-SNAPSHOT@aar'
 }
-
-//compile 'com.github.carlonzo.stikkyheader:core:0.0.3-SNAPSHOT'
